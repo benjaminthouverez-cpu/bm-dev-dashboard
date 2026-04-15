@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js" integrity="sha512-iZ2ORl595Wx6miw+GuadDet4WQbdSWS3JLMoNfY8cRGoEFy6oT3G9IbcrBeL6AfkgpA51ETt/faX6yLV+/gFJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+      (function() {
+        const originalConsole = window.console;
+        window.console = {
+          log: (...args) => {
+            originalConsole.log(...args);
+            window.parent.postMessage({ type: 'console', message: args.join(' ') }, '*');
+          },
+          error: (...args) => {
+            originalConsole.error(...args);
+            window.parent.postMessage({ type: 'console', message: 'Error: ' + args.join(' ') }, '*');
+          },
+          warn: (...args) => {
+            originalConsole.warn(...args);
+            window.parent.postMessage({ type: 'console', message: 'Warning: ' + args.join(' ') }, '*');
+          }
+        };
+
+        let requestId = 0;
+        let callbacksMap = new Map();
+        let streamControllers = new Map();
+        
+        window.claude = {
+          complete: (prompt) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'claudeComplete', id, prompt }, '*');
+            });
+          }
+        };
+
+        window.storage = {
+          get: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageGet', id, key, shared }, '*');
+            });
+          },
+          set: (key, value, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageSet', id, key, value, shared }, '*');
+            });
+          },
+          delete: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageDelete', id, key, shared }, '*');
+            });
+          },
+          list: (prefix, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageList', id, prefix, shared }, '*');
+            });
+          }
+        };
+
+        let pendingBlobs = new Map();
+        URL.createObjectURL = (blob) => {
+          // Store the blob and create an ID and URL for it
+          const blobId = `blob-${Date.now()}-${Math.random()}`;
+          pendingBlobs.set(blobId, blob);
+          return `blob-request://${blobId}`;
+        };
+
+        URL.revokeObjectURL = (url) => {
+          // Remove the blob from our store
+          const blobId = url.replace("blob-request://", "");
+          pendingBlobs.delete(blobId);
+        };
+
+        const getBlobFromURL = (url) => {
+          const blobId = url.replace("blob-request://", "");
+          return pendingBlobs.get(blobId);
+        };
+
+        // Override global fetch with streaming support
+        window.fetch = (url, init = {}) => {
+          return new Promise((resolve, reject) => {
+            const id = requestId++;
+            const channelId = `fetch-${id}-${Date.now()}`;
+            
+            callbacksMap.set(id, { 
+              resolve: (response) => {
+                // Create a ReadableStream for the response body
+                const stream = new ReadableStream({
+                  start(controller) {
+                    streamControllers.set(channelId, controller);
+                  },
+                  cancel() {
+                    streamControllers.delete(channelId);
+                  }
+                });
+                
+                // Create and return the Response with the stream
+                resolve(new Response(stream, {
+                  status: response.status,
+                  statusText: response.statusText,
+                  headers: response.headers
+                }));
+              },
+              reject,
+              channelId
+            });
+            
+            window.parent.postMessage({
+              type: 'proxyFetch',
+              id,
+              url,
+              init,
+              channelId
+            }, '*');
+          });
+        };
+
+        window.addEventListener('message', async (event) => {
+          if (event.data.type === 'takeScreenshot') {
+            const rootElement = document.getElementById('artifacts-component-root-html');
+            if (!rootElement) {
+              window.parent.postMessage({
+                type: 'screenshotError',
+                error: new Error('Root element not found'),
+              }, '*');
+            }
+            const screenshot = await htmlToImage.toPng(rootElement, {
+              imagePlaceholder:
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjePDgwX8ACOQDoNsk0PMAAAAASUVORK5CYII=",
+            });
+            window.parent.postMessage({
+              type: 'screenshotData',
+              data: screenshot,
+            }, '*');
+          } else if (event.data.type === 'claudeComplete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.completion);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'proxyFetchResponse') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+              callbacksMap.delete(event.data.id);
+            } else {
+              // Initial response with headers, status, etc.
+              callback.resolve({
+                status: event.data.status,
+                statusText: event.data.statusText,
+                headers: event.data.headers
+              });
+              // Don't delete the callback yet if streaming
+              if (!event.data.body) {
+                callbacksMap.delete(event.data.id);
+              }
+            }
+          } else if (event.data.type === 'proxyFetchStream') {
+            // Handle streaming data chunks
+            const controller = streamControllers.get(event.data.channelId);
+            if (controller) {
+              if (event.data.error) {
+                controller.error(new Error(event.data.error));
+                streamControllers.delete(event.data.channelId);
+              } else if (event.data.done) {
+                controller.close();
+                streamControllers.delete(event.data.channelId);
+                // Clean up the callback
+                const callback = Array.from(callbacksMap.entries()).find(
+                  ([_, value]) => value.channelId === event.data.channelId
+                );
+                if (callback) {
+                  callbacksMap.delete(callback[0]);
+                }
+              } else if (event.data.chunk) {
+                controller.enqueue(new Uint8Array(event.data.chunk));
+              }
+            }
+          } else if (event.data.type === 'storageGet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageSet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageDelete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageList') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          }
+        });
+
+        window.addEventListener('click', (event) => {
+          const isEl = event.target instanceof HTMLElement;
+          if (!isEl) return;
+    
+          // find ancestor links
+          const linkEl = event.target.closest("a");
+          if (!linkEl || !linkEl.href) return;
+    
+          event.preventDefault();
+          event.stopImmediatePropagation();
+    
+          if (linkEl.href.startsWith("blob-request:")) {
+            const blob = getBlobFromURL(linkEl.href);
+            if (!blob) return;
+            void blob.arrayBuffer().then((data) => {
+              window.parent.postMessage({
+                type: "downloadFile",
+                filename: linkEl.download,
+                data,
+                mimeType: blob.type || "application/octet-stream",
+              });
+            });
+          } else if (linkEl.href.startsWith("data:")) {
+            const [header, base64Data] = linkEl.href.split(",");
+            const mimeMatch = header.match(/data:([^;]+)/);
+            const mimeType = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+            const binaryString = atob(base64Data);
+            const data = Uint8Array.from(binaryString, (c) =>
+              c.charCodeAt(0),
+            ).buffer;
+            window.parent.postMessage({
+              type: "downloadFile",
+              filename: linkEl.download,
+              data,
+              mimeType,
+            });
+          } else {
+            let linkUrl;
+            try {
+              linkUrl = new URL(linkEl.href);
+            } catch (error) {
+              return;
+            }
+    
+            if (linkUrl.hostname === window.location.hostname) return;
+      
+            window.parent.postMessage({
+              type: 'openExternal',
+              href: linkEl.href,
+            }, '*');
+          }
+      });
+
+        const originalOpen = window.open;
+        window.open = function (url) {
+          window.parent.postMessage({
+            type: "openExternal",
+            href: url,
+          }, "*");
+        };
+
+        window.addEventListener('error', (event) => {
+          window.parent.postMessage({ type: 'console', message: 'Uncaught Error: ' + event.message }, '*');
+        });
+      })();
+    </script>
+  
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Big Mamma — Dev Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F5F0;color:#1a1a1a;font-size:13px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.25rem;background:#fff;border-bottom:0.5px solid #E0D9D0;position:sticky;top:0;z-index:10}
+.logo{font-size:12px;font-weight:700;letter-spacing:.08em;color:#3D2B1F}
+.updated{font-size:11px;color:#aaa;margin-top:1px}
+#deploy-btn{background:#3D2B1F;color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:500;cursor:pointer}
+#deploy-btn:hover{opacity:.82}
+#deploy-btn:disabled{opacity:.45;cursor:default}
+#live-link{font-size:12px;color:#1D9E75;text-decoration:none;display:none;margin-left:8px}
+#log{font-size:11px;color:#999;margin-top:2px;text-align:right}
+.tab-bar{display:flex;gap:2px;padding:.6rem 1.25rem 0;background:#fff;border-bottom:0.5px solid #E0D9D0;overflow-x:auto}
+.tab{padding:.45rem .9rem;font-size:12px;font-weight:500;color:#888;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.tab:hover{color:#3D2B1F;background:#F7F5F0}
+.tab.active{color:#3D2B1F;border-bottom:2px solid #3D2B1F;background:#fff}
+.tdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.page{display:none;padding:1.25rem}
+.page.active{display:block}
+.alert{display:flex;align-items:center;gap:8px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:.55rem .85rem;margin-bottom:1rem;font-size:12px;color:#633806}
+.kpi-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.kpi{background:#fff;border:0.5px solid #E0D9D0;border-radius:8px;padding:.5rem .75rem;flex:1;min-width:90px}
+.kpi-label{font-size:10px;color:#999;margin-bottom:2px}
+.kpi-value{font-size:16px;font-weight:600;color:#1a1a1a}
+.kpi-sub{font-size:10px;color:#aaa;margin-top:1px}
+.focus-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.focus{background:#fff;border:0.5px solid #E0D9D0;border-radius:10px;padding:.8rem .95rem}
+.focus-title{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem}
+.row{display:flex;align-items:flex-start;gap:6px;padding:3.5px 0;border-bottom:0.5px solid #F2EDE8;font-size:12px;color:#333;line-height:1.45}
+.row:last-child{border-bottom:none;padding-bottom:0}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.g{background:#1D9E75}.a{background:#EF9F27}.r{background:#E24B4A}.b{background:#378ADD}.gr{background:#bbb}
+.badge{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px}
+.bg{background:#EAF3DE;color:#3B6D11}.ba{background:#FAEEDA;color:#854F0B}.br{background:#FCEBEB;color:#A32D2D}.bb{background:#E6F1FB;color:#185FA5}.bgr{background:#F1EFE8;color:#5F5E5A}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:1rem}
+.ov-card{background:#fff;border:0.5px solid #E0D9D0;border-radius:10px;padding:.7rem .9rem;cursor:pointer}
+.ov-card:hover{border-color:#3D2B1F}
+.ov-name{font-size:12.5px;font-weight:600;margin-bottom:3px}
+.ov-sub{font-size:11px;color:#aaa;margin-bottom:.4rem}
+.ov-text{font-size:11px;color:#666;line-height:1.5}
+</style>
+</head>
+<body id="artifacts-component-root-html">
+
+<div class="topbar">
+  <div>
+    <div class="logo">BIG MAMMA — DEV PIPELINE</div>
+    <div class="updated">Apr 15 2026 · live from emails</div>
+  </div>
+  <div>
+    <div style="display:flex;align-items:center">
+      <button id="deploy-btn" onclick="downloadAndDeploy()" disabled="">📥 Downloading…</button>
+      <a id="live-link" href="https://startling-fox-c70207.netlify.app" target="_blank">✓ Live</a>
+    </div>
+    <div id="log"></div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="show(0)">Overview</div>
+  <div class="tab" onclick="show(1)"><span class="tdot" style="background:#1D9E75"></span>La Mare</div>
+  <div class="tab" onclick="show(2)"><span class="tdot" style="background:#E24B4A"></span>Charlotte</div>
+  <div class="tab" onclick="show(3)"><span class="tdot" style="background:#1D9E75"></span>Glasgow</div>
+  <div class="tab" onclick="show(4)"><span class="tdot" style="background:#EF9F27"></span>Frankfurt / VE</div>
+  <div class="tab" onclick="show(5)"><span class="tdot" style="background:#EF9F27"></span>Autres US</div>
+  <div class="tab" onclick="show(6)"><span class="tdot" style="background:#888"></span>Stratégique</div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="page active" id="p0">
+  <div class="alert">⚡ <strong>Aujourd'hui 16h00 Paris :</strong>&nbsp;Charlotte Lease Discussion — Ballyhoo/BMG · Tigrane, Maryon, Gavin, Ryan, Jon, Katie</div>
+  <div class="ov-grid">
+    <div class="ov-card" onclick="show(1)">
+      <div style="display:flex;justify-content:space-between"><div class="ov-name">Miami — La Mare</div><span class="badge bg">Actif</span></div>
+      <div class="ov-sub">Noël 2027</div>
+      <div class="ov-text">3 concepts Kiki soumis · Wynwood call ALPX planifié · Deal terms à envoyer à Maryon</div>
+    </div>
+    <div class="ov-card" onclick="show(2)">
+      <div style="display:flex;justify-content:space-between"><div class="ov-name">Charlotte — QBC</div><span class="badge br">Call 16h</span></div>
+      <div class="ov-sub">Bail en négociation</div>
+      <div class="ov-text">Markup v2 reçu · Gavin commentaires bleus · Call Ballyhoo aujourd'hui</div>
+    </div>
+    <div class="ov-card" onclick="show(3)">
+      <div style="display:flex;justify-content:space-between"><div class="ov-name">Glasgow — TGIF</div><span class="badge bg">Momentum</span></div>
+      <div class="ov-sub">~£500k · 2 ans rent free</div>
+      <div class="ov-text">BP Validation envoyé ce matin · Bonne dynamique landlord · CAPEX en cours</div>
+    </div>
+    <div class="ov-card" onclick="show(4)">
+      <div style="display:flex;justify-content:space-between"><div class="ov-name">Frankfurt / VE</div><span class="badge ba">Layout en cours</span></div>
+      <div class="ov-sub">7,2M€ / 3,6M€ capex</div>
+      <div class="ov-text">Top-down confirmé · Layout bottom-up en révision · Berlin KE OK · Gendarmenmarkt problèmes</div>
+    </div>
+    <div class="ov-card" onclick="show(5)">
+      <div style="display:flex;justify-content:space-between"><div class="ov-name">Autres US</div><span class="badge ba">En cours</span></div>
+      <div class="ov-sub">Midtown · Galleria · WPB · Universal</div>
+      <div class="ov-text">Midtown bloqué · Galleria terms à améliorer · WPB exploration · Universal early stage</div>
+    </div>
+    <div class="ov-card" onclick="show(6)">
+      <div style="display:flex;justify-content:space-between"><div class="ov-name">Stratégique</div><span class="badge ba">Point ouvert</span></div>
+      <div class="ov-sub">Build 4 Less · KIKI</div>
+      <div class="ov-text">B4L bonne dynamique · KIKI : recharge capex impossible → décalage ouvertures</div>
+    </div>
+  </div>
+</div>
+
+<!-- LA MARE -->
+<div class="page" id="p1">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Ouverture cible</div><div class="kpi-value">Noël 27</div></div>
+    <div class="kpi"><div class="kpi-label">Surface</div><div class="kpi-value">~8 000</div><div class="kpi-sub">ft² à confirmer</div></div>
+    <div class="kpi"><div class="kpi-label">Topline cible</div><div class="kpi-value">$10M</div><div class="kpi-sub">running</div></div>
+    <div class="kpi"><div class="kpi-label">Loyer</div><div class="kpi-value" style="font-size:13px">100% var</div><div class="kpi-sub">7% / 8% / 8,5%+</div></div>
+    <div class="kpi"><div class="kpi-label">Statut</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge bg">Actif</span></div></div>
+  </div>
+  <div class="focus-grid">
+    <div class="focus">
+      <div class="focus-title">Design &amp; layout</div>
+      <div class="row"><span class="dot g"></span><span>3 options layout Kiki envoyées par Justin Hardy (13 avr) — directions volontairement différentes pour "spark a reaction"</span></div>
+      <div class="row"><span class="dot g"></span><span>Julie / Cat : commentaires ajoutés — counter dans les 3 layouts, détails cuisine à intégrer</span></div>
+      <div class="row"><span class="dot a"></span><span>Ben → Justin : "Put these layouts in the presentation" — action ouverte</span></div>
+      <div class="row"><span class="dot b"></span><span>Gavin : chef's table en cuisine OK en principe · Règles outside kitchen/bar en vérification landlord</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Construction &amp; capex</div>
+      <div class="row"><span class="dot g"></span><span>Timeline mise à jour par Gavin (10 avr) : ouverture Noël 2027 réaliste</span></div>
+      <div class="row"><span class="dot g"></span><span>Felice benchmark capex déjà intégré par Antony dans onglet "Benchmarks" du devis</span></div>
+      <div class="row"><span class="dot b"></span><span>Écart Felice ~$700 vs. nous ~$1 300/ft² — partiellement expliqué, pas entièrement bridgé</span></div>
+      <div class="row"><span class="dot a"></span><span>BP capex à finaliser une fois layout fixé · Antoine a assigné une tâche à Ben dans le Master Document</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Bail &amp; deal terms</div>
+      <div class="row"><span class="dot g"></span><span>Deal terms Tigrane (7 avr) : 100% variable · 7% an1 / 8% an2 / 8,5% an3+ · 10% au-dessus de $15M</span></div>
+      <div class="row"><span class="dot r"></span><span>Maryon attend les termes à jour pour travailler avec les avocats — action BT urgente</span></div>
+      <div class="row"><span class="dot a"></span><span>Points ouverts : surface exacte, montant LOC, timeline liquor permit, horaires minimum</span></div>
+      <div class="row"><span class="dot b"></span><span>Lobby dédié RDC à charge du bailleur — clause à consolider</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Commercial &amp; opportunités</div>
+      <div class="row"><span class="dot b"></span><span>Wynwood : Teams call ALPX Group organisé — Joaquin + Tigrane + Ben</span></div>
+      <div class="row"><span class="dot b"></span><span>Brickell stats partagées par Tigrane via Sunday (10 avr)</span></div>
+      <div class="row"><span class="dot gr"></span><span>Apolline en vacances jusqu'au 20 avr · Cat assure l'intérim studio</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Next steps</div>
+      <div class="row"><span class="dot r"></span><span>Envoyer deal terms à jour à Maryon + avocats</span></div>
+      <div class="row"><span class="dot r"></span><span>Intégrer les 3 layouts dans la présentation Master Document</span></div>
+      <div class="row"><span class="dot a"></span><span>Organiser call Wynwood avec ALPX Group (Joaquin)</span></div>
+      <div class="row"><span class="dot a"></span><span>Confirmer règles outside kitchen/bar avec landlord (Gavin)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARLOTTE -->
+<div class="page" id="p2">
+  <div class="alert">⚡ <strong>Aujourd'hui 16h00 Paris (9h CST) :</strong>&nbsp;Charlotte Lease Discussion · Tigrane, Ben, Maryon, Gavin (en vol), Ryan, Jon, Katie</div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Surface</div><div class="kpi-value">8 378</div><div class="kpi-sub">sq ft</div></div>
+    <div class="kpi"><div class="kpi-label">Statut bail</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge br">Markup v2</span></div></div>
+    <div class="kpi"><div class="kpi-label">Partenaire</div><div class="kpi-value" style="font-size:13px">Ballyhoo</div><div class="kpi-sub">Ryan · Jon · Katie</div></div>
+  </div>
+  <div class="focus-grid">
+    <div class="focus">
+      <div class="focus-title">Bail — état des lieux</div>
+      <div class="row"><span class="dot g"></span><span>Nouveau markup reçu le 10 avr avec commentaires de Larry</span></div>
+      <div class="row"><span class="dot g"></span><span>Maryon : review avec commentaires verts (10 avr)</span></div>
+      <div class="row"><span class="dot g"></span><span>Gavin : commentaires bleus ajoutés (14 avr) — sera en vol pendant le call</span></div>
+      <div class="row"><span class="dot b"></span><span>Tigrane : alignement avec Ryan à Chicago semaine prochaine</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Points clés acquis (v1)</div>
+      <div class="row"><span class="dot g"></span><span>Guaranty : 4 ans → 2 ans avec trigger gross sales</span></div>
+      <div class="row"><span class="dot g"></span><span>Breakpoint relevé à $11M (vs. $9M) · Taux réduit à 5% (vs. 6%)</span></div>
+      <div class="row"><span class="dot g"></span><span>Radius restriction : 5 miles → 2 miles avec carve-outs</span></div>
+      <div class="row"><span class="dot g"></span><span>Security deposit cash supprimé → LOC burn-down</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Call aujourd'hui — à préparer</div>
+      <div class="row"><span class="dot r"></span><span>Réponses Larry sur le v1 — identifier les points de résistance</span></div>
+      <div class="row"><span class="dot r"></span><span>Défendre commentaires Gavin (bleus) en son absence</span></div>
+      <div class="row"><span class="dot a"></span><span>Alignement Tigrane / Ryan sur points stratégiques</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Personnes clés</div>
+      <div class="row"><span class="dot b"></span><span>Ryan O'Donnell — Ballyhoo, Founder &amp; CEO</span></div>
+      <div class="row"><span class="dot b"></span><span>Jon Farrer — Ballyhoo, President &amp; COO</span></div>
+      <div class="row"><span class="dot b"></span><span>Katie McQuarrie — Ballyhoo, VP Finance</span></div>
+      <div class="row"><span class="dot b"></span><span>Maryon Demoulin — BM Legal · Carla Dulbecco — BM</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Next steps</div>
+      <div class="row"><span class="dot r"></span><span>Call 16h00 Paris — aligner sur les points ouverts</span></div>
+      <div class="row"><span class="dot a"></span><span>Post-call : mettre à jour markup</span></div>
+      <div class="row"><span class="dot a"></span><span>Alignement Tigrane / Ryan à Chicago (semaine prochaine)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- GLASGOW -->
+<div class="page" id="p3">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Loyer</div><div class="kpi-value">~£500k</div><div class="kpi-sub">2 ans rent free</div></div>
+    <div class="kpi"><div class="kpi-label">Topline BP</div><div class="kpi-value">£5,8M</div></div>
+    <div class="kpi"><div class="kpi-label">People costs</div><div class="kpi-value">33%</div><div class="kpi-sub">≈ Manchester</div></div>
+    <div class="kpi"><div class="kpi-label">F&amp;B</div><div class="kpi-value">23,3%</div></div>
+    <div class="kpi"><div class="kpi-label">Statut</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge bg">Momentum</span></div></div>
+  </div>
+  <div class="focus-grid">
+    <div class="focus">
+      <div class="focus-title">Derniers signaux (15 avr)</div>
+      <div class="row"><span class="dot g"></span><span>BP Validation envoyé ce matin → Peppe, Enrico, Gianmarco : validation hypothèses opé demandée</span></div>
+      <div class="row"><span class="dot g"></span><span>"Good momentum on landlord negotiations" · Intention : "move forward decisively" si construction OK</span></div>
+      <div class="row"><span class="dot a"></span><span>Ben → Joaquin : "Ajoute un exec summary dans l'email"</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Business plan</div>
+      <div class="row"><span class="dot g"></span><span>OPEX calé sur Manchester (primary comparable people costs)</span></div>
+      <div class="row"><span class="dot b"></span><span>Topline £5,8M · People 33% · Maintenance 1,1% · F&amp;B 23,3%</span></div>
+      <div class="row"><span class="dot a"></span><span>Loyer challengé par Tigrane — peu de marge de manœuvre</span></div>
+      <div class="row"><span class="dot r"></span><span>CAPEX : point critique · Validation construction → GO / NO GO</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Risques</div>
+      <div class="row"><span class="dot r"></span><span>CAPEX : condition de go/no-go — à valider par construction team</span></div>
+      <div class="row"><span class="dot a"></span><span>Profil dinner-heavy vs. concurrence lunch-heavy (cf. Birmingham) — point Enrico</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Next steps</div>
+      <div class="row"><span class="dot r"></span><span>Peppe / Enrico / Gianmarco : valider hypothèses opé du BP</span></div>
+      <div class="row"><span class="dot r"></span><span>Construction team : validation CAPEX → GO / NO GO</span></div>
+      <div class="row"><span class="dot a"></span><span>Joaquin : ajouter exec summary dans les prochains envois</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FRANKFURT / VE -->
+<div class="page" id="p4">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Topline cible</div><div class="kpi-value">7,2M€</div></div>
+    <div class="kpi"><div class="kpi-label">Capex cible</div><div class="kpi-value">3,6M€</div></div>
+    <div class="kpi"><div class="kpi-label">Layout</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge ba">En révision</span></div></div>
+  </div>
+  <div class="focus-grid">
+    <div class="focus">
+      <div class="focus-title">Frankfurt — état</div>
+      <div class="row"><span class="dot g"></span><span>Objectif top-down confirmé (Ben 7 avr) : 7,2M€ / 3,6M€ capex · Peppe OK</span></div>
+      <div class="row"><span class="dot a"></span><span>Layout en révision (covers + PDR) · BP bottom-up à mettre à jour ensuite</span></div>
+      <div class="row"><span class="dot b"></span><span>Terrasse : 715k€ · Bailleur OK pour décaler ouverture · Sans terrasse : 4M€ · Décision en suspens</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">VE — état</div>
+      <div class="row"><span class="dot g"></span><span>Berlin KE : bien positionné (Antony, 13 avr)</span></div>
+      <div class="row"><span class="dot r"></span><span>Gendarmenmarkt : problèmes identifiés</span></div>
+      <div class="row"><span class="dot a"></span><span>Bel Mondo : sync Antoine / Antony à organiser</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Next steps</div>
+      <div class="row"><span class="dot r"></span><span>Frankfurt : finaliser layout → mettre à jour BP bottom-up</span></div>
+      <div class="row"><span class="dot r"></span><span>Décision terrasse Frankfurt</span></div>
+      <div class="row"><span class="dot a"></span><span>Bel Mondo : organiser sync · Gendarmenmarkt : plan d'action</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTRES US -->
+<div class="page" id="p5">
+  <div class="focus-grid">
+    <div class="focus">
+      <div class="focus-title">Miami — Midtown</div>
+      <div class="row"><span class="dot r"></span><span>Bailleur ne bouge pas sur les terms</span></div>
+      <div class="row"><span class="dot a"></span><span>Discussion P2P Tigrane / Alex toujours en cours</span></div>
+      <div class="row"><span class="dot b"></span><span>Stratégie : levier via deal Sunset (Joaquin)</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Miami — Galleria / Carmine's</div>
+      <div class="row"><span class="dot a"></span><span>Deal terms insuffisants · BP Joaquin · Layout Justin en cours</span></div>
+      <div class="row"><span class="dot gr"></span><span>Coral Gables : quelques leads, rien de concret</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">West Palm Beach</div>
+      <div class="row"><span class="dot a"></span><span>~6 000 ft² · Tigrane a visité · Surface et emplacement à creuser</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Universal</div>
+      <div class="row"><span class="dot gr"></span><span>Premier proposal soumis · Joaquin a rencontré l'équipe</span></div>
+      <div class="row"><span class="dot a"></span><span>Structure encore peu claire</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Prague / Pologne JV · Warsaw</div>
+      <div class="row"><span class="dot gr"></span><span>Prague / Pologne : projets avancent, à préciser</span></div>
+      <div class="row"><span class="dot gr"></span><span>Warsaw : visite terrain effectuée (8 avr) · Bianka + Kevork WS Concept</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STRATÉGIQUE -->
+<div class="page" id="p6">
+  <div class="focus-grid">
+    <div class="focus">
+      <div class="focus-title">Build 4 Less</div>
+      <div class="row"><span class="dot g"></span><span>1ers workshops fin mars (Londres) · Objectif −25% capex · Bonne dynamique</span></div>
+      <div class="row"><span class="dot a"></span><span>Prochains workshops début mai</span></div>
+      <div class="row"><span class="dot gr"></span><span>VCP partagé au Board le 10 avr (William)</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">KIKI Studio — impact capex</div>
+      <div class="row"><span class="dot r"></span><span>Recharge capex KIKI vers projets dev impossible (timesheets, CAC)</span></div>
+      <div class="row"><span class="dot r"></span><span>Impact : décalage ouvertures plusieurs mois (Dallas 6-9 mois · Circolo / The Anchor : idem)</span></div>
+      <div class="row"><span class="dot a"></span><span>Pour les US : William va regarder ce qui est possible</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Big Mamma IA</div>
+      <div class="row"><span class="dot a"></span><span>En cours de structuration avec Thomas et Greg</span></div>
+    </div>
+    <div class="focus">
+      <div class="focus-title">Équipe</div>
+      <div class="row"><span class="dot a"></span><span>Passation Apolline → Cat : en cours · Apolline en vacances jusqu'au 20 avr</span></div>
+      <div class="row"><span class="dot gr"></span><span>Méthodo Antoine : à clarifier</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(i){
+  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',j===i));
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+}
+
+function downloadAndDeploy(){
+  var btn=document.getElementById('deploy-btn');
+  var log=document.getElementById('log');
+  btn.disabled=true;
+  btn.textContent='📥 Downloading…';
+  try{
+    var html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+    var blob=new Blob([html],{type:'text/html'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='bm-dashboard.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    btn.textContent='✓ Downloaded — watcher deploys';
+    log.textContent='Le watcher Python détecte le fichier et déploie automatiquement';
+    setTimeout(function(){
+      btn.textContent='📥 Download & Deploy';
+      btn.disabled=false;
+      log.textContent='';
+    },5000);
+  }catch(e){
+    log.textContent='Erreur : '+e.message;
+    btn.disabled=false;
+    btn.textContent='📥 Download & Deploy';
+  }
+}
+</script>
+
+
+</body></html>
