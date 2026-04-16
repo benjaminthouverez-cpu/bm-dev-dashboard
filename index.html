@@ -288,363 +288,919 @@
     </script>
   
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Big Mamma — Dev Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Mamma — Project Dashboards</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F5F0;color:#1a1a1a;font-size:13px}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.25rem;background:#fff;border-bottom:0.5px solid #E0D9D0;position:sticky;top:0;z-index:10}
-.logo{font-size:12px;font-weight:700;letter-spacing:.08em;color:#3D2B1F}
-.updated{font-size:11px;color:#aaa;margin-top:1px}
-#deploy-btn{background:#3D2B1F;color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:500;cursor:pointer}
-#deploy-btn:hover{opacity:.82}
-#deploy-btn:disabled{opacity:.45;cursor:default}
-#live-link{font-size:12px;color:#1D9E75;text-decoration:none;display:none;margin-left:8px}
-#log{font-size:11px;color:#999;margin-top:2px;text-align:right}
-.tab-bar{display:flex;gap:2px;padding:.6rem 1.25rem 0;background:#fff;border-bottom:0.5px solid #E0D9D0;overflow-x:auto}
-.tab{padding:.45rem .9rem;font-size:12px;font-weight:500;color:#888;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
-.tab:hover{color:#3D2B1F;background:#F7F5F0}
-.tab.active{color:#3D2B1F;border-bottom:2px solid #3D2B1F;background:#fff}
-.tdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
-.page{display:none;padding:1.25rem}
-.page.active{display:block}
-.alert{display:flex;align-items:center;gap:8px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:.55rem .85rem;margin-bottom:1rem;font-size:12px;color:#633806}
-.kpi-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.kpi{background:#fff;border:0.5px solid #E0D9D0;border-radius:8px;padding:.5rem .75rem;flex:1;min-width:90px}
-.kpi-label{font-size:10px;color:#999;margin-bottom:2px}
-.kpi-value{font-size:16px;font-weight:600;color:#1a1a1a}
-.kpi-sub{font-size:10px;color:#aaa;margin-top:1px}
-.focus-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.focus{background:#fff;border:0.5px solid #E0D9D0;border-radius:10px;padding:.8rem .95rem}
-.focus-title{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem}
-.row{display:flex;align-items:flex-start;gap:6px;padding:3.5px 0;border-bottom:0.5px solid #F2EDE8;font-size:12px;color:#333;line-height:1.45}
-.row:last-child{border-bottom:none;padding-bottom:0}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.g{background:#1D9E75}.a{background:#EF9F27}.r{background:#E24B4A}.b{background:#378ADD}.gr{background:#bbb}
-.badge{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px}
-.bg{background:#EAF3DE;color:#3B6D11}.ba{background:#FAEEDA;color:#854F0B}.br{background:#FCEBEB;color:#A32D2D}.bb{background:#E6F1FB;color:#185FA5}.bgr{background:#F1EFE8;color:#5F5E5A}
-.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:1rem}
-.ov-card{background:#fff;border:0.5px solid #E0D9D0;border-radius:10px;padding:.7rem .9rem;cursor:pointer}
-.ov-card:hover{border-color:#3D2B1F}
-.ov-name{font-size:12.5px;font-weight:600;margin-bottom:3px}
-.ov-sub{font-size:11px;color:#aaa;margin-bottom:.4rem}
-.ov-text{font-size:11px;color:#666;line-height:1.5}
+:root{
+  --cream:#FAF7F2;--brown:#3D2B1F;--brown-light:#6B4C3B;--gold:#C9A84C;--gold-light:#E8D5A3;
+  --border:#DDD5C8;--text:#2C1F14;--text-muted:#7A6555;--red:#C0392B;--orange:#D35400;--green:#1A7A4A;
+  --bg-card:#FFFFFF;
+}
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── MASTER NAV ── */
+.master-nav{background:#2A1E13;padding:0 20px;display:flex;align-items:center;gap:0;overflow-x:auto;flex-wrap:nowrap}
+.master-nav-brand{color:var(--gold);font-family:'Playfair Display',serif;font-size:12px;letter-spacing:1.5px;white-space:nowrap;padding:11px 16px 11px 0;margin-right:4px;border-right:1px solid rgba(255,255,255,.12);flex-shrink:0}
+.nav-btn{padding:11px 13px;font-size:12px;cursor:pointer;color:rgba(255,255,255,.45);border:none;border-bottom:2px solid transparent;background:none;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.nav-btn:hover{color:rgba(255,255,255,.8)}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding-left:12px;flex-shrink:0}
+.dl-btn{background:var(--gold);border:none;padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;color:var(--brown);font-family:'Inter',sans-serif;white-space:nowrap;transition:opacity .2s}
+.dl-btn:hover{opacity:.85}
+.lang-toggle{display:flex;gap:5px}
+.lang-btn{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);padding:4px 9px;border-radius:20px;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;transition:all .2s}
+.lang-btn.active{background:var(--gold);border-color:var(--gold);color:var(--brown)}
+
+/* ── PROJECT VIEWS ── */
+.project-view{display:none}
+.project-view.active{display:block}
+
+/* ── TRACKER ── */
+.tr-header{background:var(--brown);padding:20px 28px}
+.tr-header h1{font-family:'Playfair Display',serif;color:#FAF7F2;font-size:20px;font-weight:400;letter-spacing:.5px}
+.tr-header p{color:var(--gold-light);font-size:12px;margin-top:3px;opacity:.8}
+.tr-body{padding:24px 28px;max-width:1200px}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px}
+.kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.kpi-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.kpi-value{font-family:'Playfair Display',serif;font-size:24px;color:var(--brown)}
+.kpi-value.kv-red{color:var(--red)}.kpi-value.kv-orange{color:var(--orange)}.kpi-value.kv-green{color:var(--green)}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.tr-section{font-family:'Playfair Display',serif;font-size:15px;font-weight:400;color:var(--brown);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:28px}
+.pc{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;cursor:pointer;transition:all .2s;border-left:4px solid}
+.pc:hover{box-shadow:0 2px 10px rgba(0,0,0,.08);transform:translateY(-1px)}
+.pc.c-red{border-left-color:var(--red)}.pc.c-orange{border-left-color:var(--orange)}.pc.c-green{border-left-color:var(--green)}.pc.c-gold{border-left-color:var(--gold)}
+.pc-phase{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.pc-name{font-family:'Playfair Display',serif;font-size:15px;color:var(--brown);margin-bottom:5px}
+.pc-alert{font-size:12px;margin-bottom:8px;min-height:16px}
+.pc-alert.a-red{color:var(--red)}.pc-alert.a-orange{color:var(--orange)}.pc-alert.a-green{color:var(--green)}
+.pc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.pc-tag{font-size:10px;background:#F0EAE0;color:var(--text-muted);padding:2px 7px;border-radius:10px}
+.ms-table{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:28px}
+.ms-row{display:flex;gap:0;padding:10px 16px;border-bottom:1px solid #F0EAE0;font-size:12px;align-items:center}
+.ms-row:last-child{border-bottom:none}
+.ms-date{min-width:100px;color:var(--text-muted);font-size:11px;flex-shrink:0}
+.ms-proj{min-width:100px;font-size:11px;color:var(--text-muted);flex-shrink:0}
+.ms-event{font-weight:500;color:var(--text)}
+.ms-row.urgent .ms-event{color:var(--red)}
+
+/* ── SHARED PROJ DETAIL ── */
+.proj-hdr{background:var(--brown);padding:20px 28px;display:flex;align-items:center;justify-content:space-between}
+.proj-hdr-left h1{font-family:'Playfair Display',serif;color:#FAF7F2;font-size:22px;font-weight:400;letter-spacing:.5px}
+.proj-hdr-left p{color:var(--gold-light);font-size:12px;margin-top:2px;opacity:.85}
+.edit-toggle-btn{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
+.edit-toggle-btn.on{background:#fff;border-color:#fff;color:var(--brown)}
+.alert-bar{background:#FEF3CD;border-bottom:1px solid #F0D88A;padding:10px 28px;display:flex;gap:20px;overflow-x:auto}
+.al{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;color:var(--brown)}
+.al .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-red{background:var(--red)}.dot-orange{background:var(--orange)}.dot-gold{background:var(--gold)}.dot-green{background:var(--green)}
+.tabs{display:flex;background:var(--cream);border-bottom:1px solid var(--border);padding:0 28px;overflow-x:auto}
+.tab{padding:12px 18px;cursor:pointer;font-size:13px;color:var(--text-muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--brown);background:#F0EAE0}
+.tab.active{color:var(--brown);border-bottom-color:var(--gold);font-weight:500}
+.content{padding:24px 28px;max-width:1100px}
+.pane{display:none}.pane.active{display:block}
+.section-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:400;color:var(--brown);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:680px){.grid-3,.grid-2{grid-template-columns:1fr}}
+.metric{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.metric-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.metric-value{font-family:'Playfair Display',serif;font-size:24px;color:var(--brown)}
+.metric-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:12px}
+.card-title{font-weight:500;color:var(--brown);margin-bottom:10px;font-size:13px}
+.signal{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #F0EAE0}
+.signal:last-child{border-bottom:none}
+.sdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.signal-title{font-size:13px;font-weight:500;color:var(--text)}
+.signal-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.badge-red{background:#FDECEA;color:var(--red)}.badge-orange{background:#FEF0E6;color:var(--orange)}.badge-green{background:#E8F5EE;color:var(--green)}.badge-gold{background:#FBF4E3;color:#8B6914}.badge-gray{background:#F0EAE0;color:var(--text-muted)}
+.tl-row{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-bottom:1px solid #F0EAE0}
+.tl-row:last-child{border-bottom:none}
+.tl-date{font-size:11px;color:var(--text-muted);min-width:90px;margin-top:2px}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.tl-dot-done{background:var(--green)}.tl-dot-active{background:var(--gold)}.tl-dot-todo{background:var(--border)}
+.tl-body{flex:1}
+.tl-title{font-size:13px;font-weight:500;color:var(--text)}
+.tl-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+.rt{width:100%;border-collapse:collapse;font-size:12px}
+.rt th{text-align:left;padding:8px 10px;background:#F5EFE6;color:var(--text-muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.rt td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.rt tr:last-child td{border-bottom:none}
+.dep-row{padding:10px 0;border-bottom:1px solid #F0EAE0;display:flex;align-items:center;gap:10px;font-size:12px}
+.dep-row:last-child{border-bottom:none}
+.dep-arrow{color:var(--gold);font-weight:500}
+.warning-box{background:#FEF3CD;border:1px solid #F0D88A;border-radius:6px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--brown)}
+.info-box{background:#EEF5E6;border:1px solid #A8D5B5;border-radius:6px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--brown)}
+/* ACTIONS */
+.act-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.flt-btn{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--text-muted);font-family:'Inter',sans-serif;transition:all .2s}
+.flt-btn.active{background:var(--brown);color:#fff;border-color:var(--brown)}
+.add-act-btn{background:var(--gold);border:none;border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;color:var(--brown);font-family:'Inter',sans-serif;font-weight:500;display:none}
+.at{width:100%;border-collapse:collapse}
+.at th{text-align:left;padding:10px 12px;background:#F5EFE6;color:var(--text-muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
+.at td{padding:10px 12px;border-bottom:1px solid #F0EAE0;font-size:13px;vertical-align:middle}
+.at tr:last-child td{border-bottom:none}
+.at tr:hover td{background:#FAFAF8}
+.ssel,.psel{border:1px solid transparent;background:transparent;font-family:'Inter',sans-serif;font-size:12px;border-radius:12px;padding:2px 6px;cursor:pointer;outline:none}
+.ssel:hover,.psel:hover{border-color:var(--border)}
+.s-OPEN{background:#FDECEA;color:var(--red)}.s-IN_PROGRESS{background:#FEF0E6;color:var(--orange)}.s-DONE{background:#E8F5EE;color:var(--green)}.s-BLOCKED,.s-PENDING{background:#F0EAE0;color:var(--text-muted)}
+.p-CRITICAL{color:var(--red);font-weight:500}.p-HIGH{color:var(--orange)}.p-NORMAL{color:var(--text-muted)}
+.act-input{border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;font-family:'Inter',sans-serif;background:#fff;outline:none;width:100%}
+.act-input:focus{border-color:var(--gold)}
+.del-btn{background:transparent;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:2px 4px}
+.del-btn:hover{color:var(--red)}
+/* TEAM */
+.team-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0EAE0}
+.team-row:last-child{border-bottom:none}
+.av{width:30px;height:30px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--brown);flex-shrink:0}
+.av-ext{background:#E8F5EE;color:var(--green)}
 </style>
 </head>
 <body id="artifacts-component-root-html">
 
-<div class="topbar">
-  <div>
-    <div class="logo">BIG MAMMA — DEV PIPELINE</div>
-    <div class="updated">Apr 15 2026 · live from emails</div>
-  </div>
-  <div>
-    <div style="display:flex;align-items:center">
-      <button id="deploy-btn" onclick="downloadAndDeploy()" disabled="">📥 Downloading…</button>
-      <a id="live-link" href="https://startling-fox-c70207.netlify.app" target="_blank">✓ Live</a>
-    </div>
-    <div id="log"></div>
-  </div>
-</div>
-
-<div class="tab-bar">
-  <div class="tab active" onclick="show(0)">Overview</div>
-  <div class="tab" onclick="show(1)"><span class="tdot" style="background:#1D9E75"></span>La Mare</div>
-  <div class="tab" onclick="show(2)"><span class="tdot" style="background:#E24B4A"></span>Charlotte</div>
-  <div class="tab" onclick="show(3)"><span class="tdot" style="background:#1D9E75"></span>Glasgow</div>
-  <div class="tab" onclick="show(4)"><span class="tdot" style="background:#EF9F27"></span>Frankfurt / VE</div>
-  <div class="tab" onclick="show(5)"><span class="tdot" style="background:#EF9F27"></span>Autres US</div>
-  <div class="tab" onclick="show(6)"><span class="tdot" style="background:#888"></span>Stratégique</div>
-</div>
-
-<!-- OVERVIEW -->
-<div class="page active" id="p0">
-  <div class="alert">⚡ <strong>Aujourd'hui 16h00 Paris :</strong>&nbsp;Charlotte Lease Discussion — Ballyhoo/BMG · Tigrane, Maryon, Gavin, Ryan, Jon, Katie</div>
-  <div class="ov-grid">
-    <div class="ov-card" onclick="show(1)">
-      <div style="display:flex;justify-content:space-between"><div class="ov-name">Miami — La Mare</div><span class="badge bg">Actif</span></div>
-      <div class="ov-sub">Noël 2027</div>
-      <div class="ov-text">3 concepts Kiki soumis · Wynwood call ALPX planifié · Deal terms à envoyer à Maryon</div>
-    </div>
-    <div class="ov-card" onclick="show(2)">
-      <div style="display:flex;justify-content:space-between"><div class="ov-name">Charlotte — QBC</div><span class="badge br">Call 16h</span></div>
-      <div class="ov-sub">Bail en négociation</div>
-      <div class="ov-text">Markup v2 reçu · Gavin commentaires bleus · Call Ballyhoo aujourd'hui</div>
-    </div>
-    <div class="ov-card" onclick="show(3)">
-      <div style="display:flex;justify-content:space-between"><div class="ov-name">Glasgow — TGIF</div><span class="badge bg">Momentum</span></div>
-      <div class="ov-sub">~£500k · 2 ans rent free</div>
-      <div class="ov-text">BP Validation envoyé ce matin · Bonne dynamique landlord · CAPEX en cours</div>
-    </div>
-    <div class="ov-card" onclick="show(4)">
-      <div style="display:flex;justify-content:space-between"><div class="ov-name">Frankfurt / VE</div><span class="badge ba">Layout en cours</span></div>
-      <div class="ov-sub">7,2M€ / 3,6M€ capex</div>
-      <div class="ov-text">Top-down confirmé · Layout bottom-up en révision · Berlin KE OK · Gendarmenmarkt problèmes</div>
-    </div>
-    <div class="ov-card" onclick="show(5)">
-      <div style="display:flex;justify-content:space-between"><div class="ov-name">Autres US</div><span class="badge ba">En cours</span></div>
-      <div class="ov-sub">Midtown · Galleria · WPB · Universal</div>
-      <div class="ov-text">Midtown bloqué · Galleria terms à améliorer · WPB exploration · Universal early stage</div>
-    </div>
-    <div class="ov-card" onclick="show(6)">
-      <div style="display:flex;justify-content:space-between"><div class="ov-name">Stratégique</div><span class="badge ba">Point ouvert</span></div>
-      <div class="ov-sub">Build 4 Less · KIKI</div>
-      <div class="ov-text">B4L bonne dynamique · KIKI : recharge capex impossible → décalage ouvertures</div>
+<!-- ══════════════════════════════════════════
+     MASTER NAV
+══════════════════════════════════════════ -->
+<div class="master-nav">
+  <div class="master-nav-brand">BIG MAMMA</div>
+  <button class="nav-btn active" onclick="showProject('tracker')">◉ BM Project Tracker</button>
+  <button class="nav-btn" onclick="showProject('miami')">Miami La Mare</button>
+  <button class="nav-btn" onclick="showProject('charlotte')">Charlotte</button>
+  <button class="nav-btn" onclick="showProject('juno')">Juno Beach</button>
+  <button class="nav-btn" onclick="showProject('berlin-gm')">Berlin GM</button>
+  <button class="nav-btn" onclick="showProject('berlin-ke')">Berlin KE</button>
+  <button class="nav-btn" onclick="showProject('mexico')">Mexico</button>
+  <div class="nav-right">
+    <button class="dl-btn" onclick="downloadDashboard()">↓ Download</button>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('fr')">FR</button>
     </div>
   </div>
 </div>
 
-<!-- LA MARE -->
-<div class="page" id="p1">
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">Ouverture cible</div><div class="kpi-value">Noël 27</div></div>
-    <div class="kpi"><div class="kpi-label">Surface</div><div class="kpi-value">~8 000</div><div class="kpi-sub">ft² à confirmer</div></div>
-    <div class="kpi"><div class="kpi-label">Topline cible</div><div class="kpi-value">$10M</div><div class="kpi-sub">running</div></div>
-    <div class="kpi"><div class="kpi-label">Loyer</div><div class="kpi-value" style="font-size:13px">100% var</div><div class="kpi-sub">7% / 8% / 8,5%+</div></div>
-    <div class="kpi"><div class="kpi-label">Statut</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge bg">Actif</span></div></div>
+<!-- ══════════════════════════════════════════
+     BM PROJECT TRACKER
+══════════════════════════════════════════ -->
+<div class="project-view active" id="view-tracker">
+  <div class="tr-header">
+    <h1>BM — Project Tracker</h1>
+    <p data-en="Development pipeline · Updated Apr 16, 2026" data-fr="Pipeline développement · Mis à jour 16 avr. 2026">Development pipeline · Updated Apr 16, 2026</p>
   </div>
-  <div class="focus-grid">
-    <div class="focus">
-      <div class="focus-title">Design &amp; layout</div>
-      <div class="row"><span class="dot g"></span><span>3 options layout Kiki envoyées par Justin Hardy (13 avr) — directions volontairement différentes pour "spark a reaction"</span></div>
-      <div class="row"><span class="dot g"></span><span>Julie / Cat : commentaires ajoutés — counter dans les 3 layouts, détails cuisine à intégrer</span></div>
-      <div class="row"><span class="dot a"></span><span>Ben → Justin : "Put these layouts in the presentation" — action ouverte</span></div>
-      <div class="row"><span class="dot b"></span><span>Gavin : chef's table en cuisine OK en principe · Règles outside kitchen/bar en vérification landlord</span></div>
+  <div class="tr-body">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label" data-en="Active projects" data-fr="Projets actifs">Active projects</div><div class="kpi-value">6</div></div>
+      <div class="kpi"><div class="kpi-label" data-en="Critical alerts" data-fr="Alertes critiques">Critical alerts</div><div class="kpi-value kv-red">3</div><div class="kpi-sub" data-en="Charlotte · Miami · Juno" data-fr="Charlotte · Miami · Juno">Charlotte · Miami · Juno</div></div>
+      <div class="kpi"><div class="kpi-label" data-en="Next opening" data-fr="Prochaine ouverture">Next opening</div><div class="kpi-value kv-green">Jun 2026</div><div class="kpi-sub">Mexico La Bellezza</div></div>
+      <div class="kpi"><div class="kpi-label" data-en="Lease negotiations" data-fr="Baux en négociation">Lease negotiations</div><div class="kpi-value kv-orange">2</div><div class="kpi-sub">Charlotte · Miami</div></div>
+      <div class="kpi"><div class="kpi-label" data-en="Under construction" data-fr="En construction">Under construction</div><div class="kpi-value">2</div><div class="kpi-sub">Berlin GM · KE</div></div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Construction &amp; capex</div>
-      <div class="row"><span class="dot g"></span><span>Timeline mise à jour par Gavin (10 avr) : ouverture Noël 2027 réaliste</span></div>
-      <div class="row"><span class="dot g"></span><span>Felice benchmark capex déjà intégré par Antony dans onglet "Benchmarks" du devis</span></div>
-      <div class="row"><span class="dot b"></span><span>Écart Felice ~$700 vs. nous ~$1 300/ft² — partiellement expliqué, pas entièrement bridgé</span></div>
-      <div class="row"><span class="dot a"></span><span>BP capex à finaliser une fois layout fixé · Antoine a assigné une tâche à Ben dans le Master Document</span></div>
+
+    <div class="tr-section" data-en="Projects" data-fr="Projets">Projects</div>
+    <div class="project-grid">
+      <div class="pc c-red" onclick="showProject('charlotte')">
+        <div class="pc-phase">Lease / negotiation</div>
+        <div class="pc-name">Charlotte QBC</div>
+        <div class="pc-alert a-red" data-en="Lease call Apr 15 — Tigrane + Ballyhoo alignment" data-fr="Call bail 15 avr. — alignment Tigrane + Ballyhoo">Lease call Apr 15 — Tigrane + Ballyhoo alignment</div>
+        <div class="pc-tags"><span class="pc-tag">Opening T4 2027</span><span class="pc-tag">Ballyhoo</span></div>
+      </div>
+      <div class="pc c-red" onclick="showProject('juno')">
+        <div class="pc-phase">Pre-construction</div>
+        <div class="pc-name">Juno Beach</div>
+        <div class="pc-alert a-red" data-en="GC tender due Apr 17 — 4 contractors" data-fr="Tender GC dû 17 avr. — 4 entreprises">GC tender due Apr 17 — 4 contractors</div>
+        <div class="pc-tags"><span class="pc-tag">Handover Oct 2026</span><span class="pc-tag">OPCO/PROPCO open</span></div>
+      </div>
+      <div class="pc c-orange" onclick="showProject('miami')">
+        <div class="pc-phase">Design development</div>
+        <div class="pc-name">Miami La Mare</div>
+        <div class="pc-alert a-orange" data-en="Zoning blocks CapEx — 3 KIKI concepts in progress" data-fr="Zoning bloque CapEx — 3 concepts KIKI en cours">Zoning blocks CapEx — 3 KIKI concepts in progress</div>
+        <div class="pc-tags"><span class="pc-tag">$9.3M CapEx draft</span><span class="pc-tag">Opening Dec 2027</span></div>
+      </div>
+      <div class="pc c-orange" onclick="showProject('berlin-gm')">
+        <div class="pc-phase">Construction</div>
+        <div class="pc-name">Berlin Gendarmenmarkt</div>
+        <div class="pc-alert a-orange" data-en="VE issues open — Antony Apr 13" data-fr="VE issues ouverts — Antony 13 avr.">VE issues open — Antony Apr 13</div>
+        <div class="pc-tags"><span class="pc-tag">Handover May 18</span><span class="pc-tag">Stapelbroek GC</span></div>
+      </div>
+      <div class="pc c-orange" onclick="showProject('berlin-ke')">
+        <div class="pc-phase">Construction</div>
+        <div class="pc-name">Berlin Kranzler Eck</div>
+        <div class="pc-alert a-orange" data-en="Opening 2026 at risk — landlord works dependency" data-fr="Ouverture 2026 à risque — dépendance travaux LL">Opening 2026 at risk — landlord works dependency</div>
+        <div class="pc-tags"><span class="pc-tag">€4.45M CapEx</span><span class="pc-tag">22-week contract</span></div>
+      </div>
+      <div class="pc c-green" onclick="showProject('mexico')">
+        <div class="pc-phase">Pre-opening</div>
+        <div class="pc-name">Mexico La Bellezza</div>
+        <div class="pc-alert a-orange" data-en="Cost allocation open — opening May–Jun 2026" data-fr="Allocation coûts ouverte — ouverture mai–juin 2026">Cost allocation open — opening May–Jun 2026</div>
+        <div class="pc-tags"><span class="pc-tag">Franchise</span><span class="pc-tag">Grupo Dinar</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Bail &amp; deal terms</div>
-      <div class="row"><span class="dot g"></span><span>Deal terms Tigrane (7 avr) : 100% variable · 7% an1 / 8% an2 / 8,5% an3+ · 10% au-dessus de $15M</span></div>
-      <div class="row"><span class="dot r"></span><span>Maryon attend les termes à jour pour travailler avec les avocats — action BT urgente</span></div>
-      <div class="row"><span class="dot a"></span><span>Points ouverts : surface exacte, montant LOC, timeline liquor permit, horaires minimum</span></div>
-      <div class="row"><span class="dot b"></span><span>Lobby dédié RDC à charge du bailleur — clause à consolider</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Commercial &amp; opportunités</div>
-      <div class="row"><span class="dot b"></span><span>Wynwood : Teams call ALPX Group organisé — Joaquin + Tigrane + Ben</span></div>
-      <div class="row"><span class="dot b"></span><span>Brickell stats partagées par Tigrane via Sunday (10 avr)</span></div>
-      <div class="row"><span class="dot gr"></span><span>Apolline en vacances jusqu'au 20 avr · Cat assure l'intérim studio</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Next steps</div>
-      <div class="row"><span class="dot r"></span><span>Envoyer deal terms à jour à Maryon + avocats</span></div>
-      <div class="row"><span class="dot r"></span><span>Intégrer les 3 layouts dans la présentation Master Document</span></div>
-      <div class="row"><span class="dot a"></span><span>Organiser call Wynwood avec ALPX Group (Joaquin)</span></div>
-      <div class="row"><span class="dot a"></span><span>Confirmer règles outside kitchen/bar avec landlord (Gavin)</span></div>
+
+    <div class="tr-section" data-en="Next milestones — all projects" data-fr="Prochains jalons — tous projets">Next milestones — all projects</div>
+    <div class="ms-table">
+      <div class="ms-row urgent"><div class="ms-date">Apr 15, 2026</div><div class="ms-proj">Charlotte</div><div class="ms-event" data-en="Lease call — Tigrane + Ballyhoo (rescheduled 11am CST)" data-fr="Call bail — Tigrane + Ballyhoo (11h CST)">Lease call — Tigrane + Ballyhoo (rescheduled 11am CST)</div></div>
+      <div class="ms-row urgent"><div class="ms-date">Apr 17, 2026</div><div class="ms-proj">Juno / Miami</div><div class="ms-event" data-en="GC tender Juno (4 contractors) → benchmark for Miami CapEx" data-fr="Tender GC Juno (4 entreprises) → benchmark CapEx Miami">GC tender Juno (4 contractors) → benchmark for Miami CapEx</div></div>
+      <div class="ms-row"><div class="ms-date">Apr 20, 2026</div><div class="ms-proj">Miami</div><div class="ms-event" data-en="Pool area estimation — Clem review" data-fr="Estimation zone piscine — review Clem">Pool area estimation — Clem review</div></div>
+      <div class="ms-row"><div class="ms-date">Wk Apr 20</div><div class="ms-proj">Charlotte</div><div class="ms-event" data-en="Tigrane + Ryan O'Donnell — Chicago alignment" data-fr="Tigrane + Ryan O'Donnell — alignment Chicago">Tigrane + Ryan O'Donnell — Chicago alignment</div></div>
+      <div class="ms-row"><div class="ms-date">May 12, 2026</div><div class="ms-proj">Miami</div><div class="ms-event" data-en="KIKI studio kick-off" data-fr="Studio kick-off KIKI">KIKI studio kick-off</div></div>
+      <div class="ms-row"><div class="ms-date">May 18, 2026</div><div class="ms-proj">Berlin GM</div><div class="ms-event" data-en="Handover target" data-fr="Handover cible">Handover target</div></div>
+      <div class="ms-row"><div class="ms-date">May–Jun 2026</div><div class="ms-proj">Mexico</div><div class="ms-event" data-en="La Bellezza opening — first Big Mamma franchise" data-fr="Ouverture La Bellezza — première franchise Big Mamma">La Bellezza opening — first Big Mamma franchise</div></div>
+      <div class="ms-row"><div class="ms-date">Oct 2026</div><div class="ms-proj">Juno Beach</div><div class="ms-event" data-en="Handover target (+3 weeks vs plan)" data-fr="Handover cible (+3 sem. vs plan)">Handover target (+3 weeks vs plan)</div></div>
+      <div class="ms-row"><div class="ms-date">Feb 2027</div><div class="ms-proj">Charlotte</div><div class="ms-event" data-en="Fit-out start" data-fr="Démarrage aménagement">Fit-out start</div></div>
+      <div class="ms-row"><div class="ms-date">Dec 10, 2027</div><div class="ms-proj">Miami</div><div class="ms-event" data-en="La Mare Brickell opening target" data-fr="Ouverture La Mare Brickell cible">La Mare Brickell opening target</div></div>
     </div>
   </div>
 </div>
 
-<!-- CHARLOTTE -->
-<div class="page" id="p2">
-  <div class="alert">⚡ <strong>Aujourd'hui 16h00 Paris (9h CST) :</strong>&nbsp;Charlotte Lease Discussion · Tigrane, Ben, Maryon, Gavin (en vol), Ryan, Jon, Katie</div>
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">Surface</div><div class="kpi-value">8 378</div><div class="kpi-sub">sq ft</div></div>
-    <div class="kpi"><div class="kpi-label">Statut bail</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge br">Markup v2</span></div></div>
-    <div class="kpi"><div class="kpi-label">Partenaire</div><div class="kpi-value" style="font-size:13px">Ballyhoo</div><div class="kpi-sub">Ryan · Jon · Katie</div></div>
+<!-- ══════════════════════════════════════════
+     MIAMI LA MARE — FULL DASHBOARD
+══════════════════════════════════════════ -->
+<div class="project-view" id="view-miami">
+  <div class="proj-hdr">
+    <div class="proj-hdr-left">
+      <h1 data-en="La Mare Brickell — Miami" data-fr="La Mare Brickell — Miami">La Mare Brickell — Miami</h1>
+      <p data-en="Project dashboard · Updated Apr 16, 2026" data-fr="Tableau de bord · Mis à jour 16 avr. 2026">Project dashboard · Updated Apr 16, 2026</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="edit-toggle-btn" id="miamiEditBtn" onclick="toggleEdit('miami')">
+        <span id="miamiEditIcon">✏</span> <span id="miamiEditLabel" data-en="Edit actions" data-fr="Modifier">Edit actions</span>
+      </button>
+    </div>
   </div>
-  <div class="focus-grid">
-    <div class="focus">
-      <div class="focus-title">Bail — état des lieux</div>
-      <div class="row"><span class="dot g"></span><span>Nouveau markup reçu le 10 avr avec commentaires de Larry</span></div>
-      <div class="row"><span class="dot g"></span><span>Maryon : review avec commentaires verts (10 avr)</span></div>
-      <div class="row"><span class="dot g"></span><span>Gavin : commentaires bleus ajoutés (14 avr) — sera en vol pendant le call</span></div>
-      <div class="row"><span class="dot b"></span><span>Tigrane : alignement avec Ryan à Chicago semaine prochaine</span></div>
+  <div class="alert-bar">
+    <div class="al"><span class="dot dot-red"></span><strong data-en="Zoning blocking CapEx + board validation" data-fr="Zoning bloque CapEx + validation board">Zoning blocking CapEx + board validation</strong><span data-en=" — 3 KIKI concepts in progress · pool zone pending Clem" data-fr=" — 3 concepts KIKI en cours · zone piscine en attente Clem"> — 3 KIKI concepts · pool zone pending Clem</span></div>
+    <div class="al"><span class="dot dot-gold"></span><strong data-en="Rent cliff" data-fr="Effet cliquet">Rent cliff</strong><span data-en=" — Graduated formula sent to Maryon · Pending legal review" data-fr=" — Formule envoyée à Maryon · En attente revue légale"> — Graduated formula sent to Maryon · Pending legal review</span></div>
+    <div class="al"><span class="dot dot-orange"></span><strong data-en="3 layouts KIKI" data-fr="3 layouts KIKI">3 layouts KIKI</strong><span data-en=" — Furniture + cover counts to be added next revision" data-fr=" — Mobilier + couverts à ajouter prochaine révision"> — Furniture + cover counts next revision (Justin)</span></div>
+  </div>
+  <div class="tabs" id="miami-tabs">
+    <div class="tab active" onclick="showTab('miami','overview')" data-en="Overview" data-fr="Vue d'ensemble">Overview</div>
+    <div class="tab" onclick="showTab('miami','economics')" data-en="Economics" data-fr="Économie">Economics</div>
+    <div class="tab" onclick="showTab('miami','timeline')" data-en="Timeline" data-fr="Calendrier">Timeline</div>
+    <div class="tab" onclick="showTab('miami','actions')" data-en="Actions" data-fr="Actions">Actions</div>
+    <div class="tab" onclick="showTab('miami','pool')" data-en="Pool" data-fr="Piscine">Pool</div>
+    <div class="tab" onclick="showTab('miami','team')" data-en="Team" data-fr="Équipe">Team</div>
+    <div class="tab" onclick="showTab('miami','vision')" data-en="Vision" data-fr="Vision">Vision</div>
+  </div>
+  <div class="content">
+    <!-- OVERVIEW -->
+    <div class="pane active" id="miami-pane-overview">
+      <div class="grid-3">
+        <div class="metric"><div class="metric-label" data-en="Opening target" data-fr="Ouverture cible">Opening target</div><div class="metric-value">Dec 2027</div><div class="metric-sub">10 December 2027</div></div>
+        <div class="metric"><div class="metric-label" data-en="Total CapEx (draft)" data-fr="CapEx total (draft)">Total CapEx (draft)</div><div class="metric-value" style="color:var(--orange)">$9.3M</div><div class="metric-sub" data-en="$1,306/sqft · ~$300 above benchmark · to challenge" data-fr="$1,306/sqft · ~$300 au-dessus benchmark · à challenger">$1,306/sqft · to challenge</div></div>
+        <div class="metric"><div class="metric-label" data-en="Interior surface" data-fr="Surface intérieure">Interior surface</div><div class="metric-value">~8,000</div><div class="metric-sub" data-en="sq ft · 3 KIKI layouts in progress" data-fr="sq ft · 3 layouts KIKI en cours">sq ft · 3 KIKI layouts in progress</div></div>
+        <div class="metric"><div class="metric-label" data-en="Revenue target Y1" data-fr="CA cible an 1">Revenue target Y1</div><div class="metric-value">$15M</div><div class="metric-sub" data-en="Rent cliff threshold" data-fr="Seuil effet cliquet">Rent cliff threshold</div></div>
+        <div class="metric"><div class="metric-label" data-en="Kitchen covers" data-fr="Couverts cuisine">Kitchen covers</div><div class="metric-value">250</div><div class="metric-sub" data-en="100 inside / 150 outside (Oct–Apr)" data-fr="100 intérieur / 150 extérieur (oct–avr)">100 inside / 150 outside</div></div>
+        <div class="metric"><div class="metric-label" data-en="Cover density ref." data-fr="Référence densité">Cover density ref.</div><div class="metric-value">18 sqft</div><div class="metric-sub" data-en="1 cover/18sqft — Juno benchmark (Lloyd)" data-fr="1 couvert/18sqft — ref. Juno (Lloyd)">1 cover/18sqft — Juno ref.</div></div>
+      </div>
+      <div class="section-title" data-en="Latest signals" data-fr="Derniers signaux">Latest signals</div>
+      <div class="card">
+        <div class="signal"><span class="sdot dot-red"></span><div style="flex:1"><div class="signal-title" data-en="3 KIKI concepts issued — Justin Hardy (Apr 13)" data-fr="3 concepts KIKI émis — Justin Hardy (13 avr.)">3 KIKI concepts issued — Justin Hardy (Apr 13)</div><div class="signal-meta" data-en="Based on 8,000 sqft (excl. pool changing room) · 3 fully different layouts to spark a reaction · Lloyd: ~1 cover/18sqft from Juno · Furniture + cover counts next revision" data-fr="Sur base 8,000 sqft (hors changing room) · 3 layouts totalement différents · Lloyd : ~1 couvert/18sqft ref. Juno · Mobilier + couverts prochaine révision">Based on 8,000 sqft · 3 different layouts · Cover density 1/18sqft (Juno ref.) · Furniture + cover counts next revision</div></div><span class="badge badge-orange" data-en="In progress" data-fr="En cours">In progress</span></div>
+        <div class="signal"><span class="sdot dot-red"></span><div style="flex:1"><div class="signal-title" data-en="Zoning blocks CapEx + board validation (Apr 10)" data-fr="Zoning bloque CapEx + validation board (10 avr.)">Zoning blocks CapEx + board validation (Apr 10)</div><div class="signal-meta" data-en="3 scenarios with KIKI (Lloyd weekly sessions) · Pool zone cannot be estimated before Clem review · Outdoor cooking option to confirm" data-fr="3 scénarios avec KIKI (sessions hebdo Lloyd) · Zone piscine non estimable avant review Clem · Cuisine outdoor à confirmer">3 KIKI scenarios · pool zone pending Clem · outdoor cooking TBC</div></div><span class="badge badge-red" data-en="Critical path" data-fr="Chemin critique">Critical path</span></div>
+        <div class="signal"><span class="sdot dot-green"></span><div style="flex:1"><div class="signal-title" data-en="Chef's table — Florida DBPR green light in principle (Apr 14)" data-fr="Table du chef — feu vert DBPR en principe (14 avr.)">Chef's table — Florida DBPR green light in principle (Apr 14)</div><div class="signal-meta" data-en="Rory Sawh (DBPR): OK if surfaces cleanable, adequate sinks, fully enclosed · Location TBD: expo line vs central — to decide at KIKI workshop" data-fr="Rory Sawh (DBPR) : OK si surfaces nettoyables, lavabos adéquats, espace fermé · Emplacement TBD : expo line vs central — décision workshop KIKI">DBPR OK · surfaces cleanable + fully enclosed · expo line vs central TBD</div></div><span class="badge badge-gold" data-en="Approved in principle" data-fr="Approuvé principe">Approved in principle</span></div>
+        <div class="signal"><span class="sdot dot-orange"></span><div style="flex:1"><div class="signal-title" data-en="Outside bar — roof + enclosable sides required (Gavin, Apr 14)" data-fr="Bar extérieur — toit + côtés fermables requis (Gavin, 14 avr.)">Outside bar — roof + enclosable sides required (Gavin, Apr 14)</div><div class="signal-meta" data-en="Dallas/Juno precedent · Gavin recommends original corner location (less visual blockage off-hours, next to escape stair) · Outdoor kitchen rules still being verified" data-fr="Précédent Dallas/Juno · Gavin recommande emplacement d'angle d'origine (moins de blocage hors ouverture) · Règles cuisine outdoor en cours de vérification">Dallas/Juno precedent · corner location recommended · outdoor kitchen rules being verified</div></div><span class="badge badge-orange" data-en="Watch" data-fr="Attention">Watch</span></div>
+        <div class="signal"><span class="sdot dot-gold"></span><div style="flex:1"><div class="signal-title" data-en="Rent cliff — graduated formula sent to Maryon (Apr 10)" data-fr="Effet cliquet — formule envoyée à Maryon (10 avr.)">Rent cliff — graduated formula sent to Maryon (Apr 10)</div><div class="signal-meta">C = MIN[(GR − $15M) × 10%, $144,000] · Cap $16.44M · Non-Aggravation Covenant · Florida law · Awaiting legal review</div></div><span class="badge badge-gold" data-en="Pending review" data-fr="En attente">Pending review</span></div>
+      </div>
+      <div class="section-title" data-en="Key dependencies" data-fr="Dépendances clés">Key dependencies</div>
+      <div class="card">
+        <div class="dep-row"><span class="sdot dot-red"></span><span data-en="Zoning scenarios finalised" data-fr="Scénarios zoning finalisés">Zoning scenarios finalised</span><span class="dep-arrow"> → </span><span data-en="CapEx estimate + board validation" data-fr="Estimation CapEx + validation board">CapEx estimate + board validation</span></div>
+        <div class="dep-row"><span class="sdot dot-red"></span><span data-en="KIKI confirms pool bar position" data-fr="KIKI confirme position bar piscine">KIKI confirms pool bar position</span><span class="dep-arrow"> → </span><span data-en="MEP design can proceed" data-fr="Conception MEP peut avancer">MEP design can proceed</span></div>
+        <div class="dep-row"><span class="sdot dot-orange"></span><span data-en="Maryon validates rent cliff formula" data-fr="Maryon valide formule effet cliquet">Maryon validates rent cliff formula</span><span class="dep-arrow"> → </span><span data-en="Lease terms finalised" data-fr="Termes bail finalisés">Lease terms finalised</span></div>
+        <div class="dep-row"><span class="sdot dot-orange"></span><span data-en="Juno GC tender results (Apr 17)" data-fr="Résultats tender GC Juno (17 avr.)">Juno GC tender results (Apr 17)</span><span class="dep-arrow"> → </span><span data-en="CapEx benchmark for Miami" data-fr="Benchmark CapEx Miami">CapEx benchmark for Miami</span></div>
+        <div class="dep-row"><span class="sdot dot-gold"></span><span data-en="KIKI studio kick-off (May 12)" data-fr="Studio kick-off KIKI (12 mai)">KIKI studio kick-off (May 12)</span><span class="dep-arrow"> → </span><span data-en="Concept design phases begin" data-fr="Phases design commencent">Concept design phases begin</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Points clés acquis (v1)</div>
-      <div class="row"><span class="dot g"></span><span>Guaranty : 4 ans → 2 ans avec trigger gross sales</span></div>
-      <div class="row"><span class="dot g"></span><span>Breakpoint relevé à $11M (vs. $9M) · Taux réduit à 5% (vs. 6%)</span></div>
-      <div class="row"><span class="dot g"></span><span>Radius restriction : 5 miles → 2 miles avec carve-outs</span></div>
-      <div class="row"><span class="dot g"></span><span>Security deposit cash supprimé → LOC burn-down</span></div>
+
+    <!-- ECONOMICS -->
+    <div class="pane" id="miami-pane-economics">
+      <div class="section-title" data-en="CapEx structure" data-fr="Structure CapEx">CapEx structure</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" data-en="Interior fit-out split" data-fr="Split aménagement intérieur">Interior fit-out split</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px" data-en="Interior only — terrace fully on landlord" data-fr="Intérieur uniquement — terrasse 100% landlord">Interior only — terrace fully on landlord</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#F5EFE6;border-radius:6px"><span style="font-size:12px">$0 – $2M</span><span class="badge badge-orange">Big Mamma</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#EEF5E6;border-radius:6px"><span style="font-size:12px">$2M – $6M</span><span class="badge badge-green">Landlord</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#FBF4E3;border-radius:6px"><span style="font-size:12px;data-en=" above="" $8m="" total"="" data-fr="Au-dessus $8M total">Above $8M total</span><span class="badge badge-gold">50/50</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-en="Terrace — landlord covers" data-fr="Terrasse — pris en charge landlord">Terrace — landlord covers</div>
+          <div style="font-size:12px;display:flex;flex-direction:column;gap:5px;color:var(--text-muted)">
+            <div><span style="color:var(--green);font-weight:500">✓ </span><span data-en="Flooring, ceilings, trellis, landscaping, sunbeds" data-fr="Revêtement, plafonds, treillage, paysagisme, transats">Flooring, ceilings, trellis, landscaping, sunbeds</span></div>
+            <div><span style="color:var(--green);font-weight:500">✓ </span><span data-en="Pool surveillance + towels" data-fr="Surveillance piscine + serviettes">Pool surveillance + towels</span></div>
+            <div><span style="color:var(--green);font-weight:500">✓ </span><span data-en="Ground floor lobby + street access + valet + signage" data-fr="Lobby RDC + accès rue + voiturier + signalétique">Ground floor lobby + street access + valet + signage</span></div>
+            <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)"><span style="color:var(--orange);font-weight:500">! </span><span data-en="BMG: all pool F&amp;B + terrace furniture (excl. sunbeds)" data-fr="BMG : F&amp;B piscine + mobilier terrasse (hors transats)">BMG: all pool F&amp;B + terrace furniture (excl. sunbeds)</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="section-title" data-en="Rent structure" data-fr="Structure loyer">Rent structure</div>
+      <div class="info-box"><strong data-en="Rent cliff solution (Apr 10): " data-fr="Solution effet cliquet (10 avr.) : ">Rent cliff solution (Apr 10): </strong>C = MIN[(GR − $15M) × 10%, $144,000] · Cap at $16.44M · Non-Aggravation Covenant · Awaiting Maryon legal review (Florida §687.03)</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+        <table class="rt">
+          <thead><tr><th data-en="Annual Gross Revenue" data-fr="CA annuel brut">Annual Gross Revenue</th><th data-en="Variable Charges" data-fr="Charges variables">Variable Charges</th></tr></thead>
+          <tbody>
+            <tr><td>≤ $15,000,000</td><td style="color:var(--green);font-weight:500">$0</td></tr>
+            <tr><td>$15,250,000</td><td>$25,000</td></tr>
+            <tr><td>$15,500,000</td><td>$50,000</td></tr>
+            <tr><td>$16,000,000</td><td>$100,000</td></tr>
+            <tr style="background:#EEF5E6"><td style="font-weight:500">≥ $16,440,000</td><td style="font-weight:500;color:var(--green)">$144,000 (cap)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="rt">
+          <thead><tr><th data-en="Year" data-fr="Année">Year</th><th>≤ $15M</th><th>&gt; $15M</th><th>&gt; $20M</th><th>&gt; $25M</th><th data-en="Expenses" data-fr="Charges">Expenses</th></tr></thead>
+          <tbody>
+            <tr><td data-en="Year 1" data-fr="An 1">Year 1</td><td>7%</td><td>8%</td><td>—</td><td>—</td><td><span class="badge badge-green" data-en="Fully abated" data-fr="Abattues">Fully abated</span></td></tr>
+            <tr><td data-en="Year 2" data-fr="An 2">Year 2</td><td>8%</td><td>9%</td><td>—</td><td>—</td><td style="font-size:11px" data-en="None if GR &lt; $15M" data-fr="Aucune si CA &lt; $15M">None if GR &lt; $15M</td></tr>
+            <tr><td data-en="Year 3" data-fr="An 3">Year 3</td><td>8%</td><td>9%</td><td>—</td><td>—</td><td style="font-size:11px" data-en="None if GR &lt; $15M" data-fr="Aucune si CA &lt; $15M">None if GR &lt; $15M</td></tr>
+            <tr><td data-en="Year 4+" data-fr="An 4+">Year 4+</td><td>8.5%</td><td>11%</td><td>13%</td><td>15%</td><td style="font-size:11px" data-en="Variable formula if GR ≥ $15M" data-fr="Formule variable si CA ≥ $15M">Variable if GR ≥ $15M</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Call aujourd'hui — à préparer</div>
-      <div class="row"><span class="dot r"></span><span>Réponses Larry sur le v1 — identifier les points de résistance</span></div>
-      <div class="row"><span class="dot r"></span><span>Défendre commentaires Gavin (bleus) en son absence</span></div>
-      <div class="row"><span class="dot a"></span><span>Alignement Tigrane / Ryan sur points stratégiques</span></div>
+
+    <!-- TIMELINE -->
+    <div class="pane" id="miami-pane-timeline">
+      <div class="section-title" data-en="Project timeline" data-fr="Calendrier projet">Project timeline</div>
+      <div class="card">
+        <div class="tl-row"><div class="tl-date">Mar 2026</div><div class="tl-dot tl-dot-done"></div><div class="tl-body"><div class="tl-title" data-en="Project Kick-Off" data-fr="Kick-Off projet">Project Kick-Off</div><div class="tl-desc" data-en="Master Document · 19 stakeholders" data-fr="Master Document · 19 parties">Master Document · 19 stakeholders</div></div><span class="badge badge-green" data-en="Done" data-fr="Fait">Done</span></div>
+        <div class="tl-row"><div class="tl-date">Apr 2026</div><div class="tl-dot tl-dot-active"></div><div class="tl-body"><div class="tl-title" data-en="Zoning + lease finalisation" data-fr="Zoning + finalisation bail">Zoning + lease finalisation</div><div class="tl-desc" data-en="3 KIKI layouts (Justin/Lloyd) · rent cliff formula → Maryon · Studio kick-off May 12" data-fr="3 layouts KIKI · formule effet cliquet → Maryon · Studio kick-off 12 mai">3 KIKI layouts · rent cliff → Maryon · Studio kick-off May 12</div></div><span class="badge badge-orange" data-en="In progress" data-fr="En cours">In progress</span></div>
+        <div class="tl-row"><div class="tl-date">May–Jul 2026</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title" data-en="KIKI concept design — Phase 1 (10 wks)" data-fr="Design concept KIKI — Phase 1 (10 sem.)">KIKI concept design — Phase 1 (10 wks)</div><div class="tl-desc" data-en="Kick-off May 12 · Elephante / Puglia references · pool bar position locked" data-fr="Kick-off 12 mai · Références Elephante / Pouilles · position bar piscine validée">Kick-off May 12 · Elephante / Puglia · pool bar position locked</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row"><div class="tl-date">Aug–Oct 2026</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title" data-en="KIKI developed design — Phase 2 (10 wks)" data-fr="Design développé — Phase 2 (10 sem.)">KIKI developed design — Phase 2 (10 wks)</div><div class="tl-desc" data-en="Technical drawings · MEP coordination · Permits" data-fr="Plans techniques · Coordination MEP · Permis">Technical drawings · MEP · Permits</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row"><div class="tl-date">Oct 2026–Aug 2027</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title" data-en="Construction (~44 weeks)" data-fr="Construction (~44 semaines)">Construction (~44 weeks)</div><div class="tl-desc" data-en="Amkin GC · Landlord: terrace + lobby in parallel" data-fr="Amkin GC · Landlord : terrasse + lobby en parallèle">Amkin GC · Landlord: terrace + lobby in parallel</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row"><div class="tl-date">Sep–Nov 2027</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title" data-en="Pre-opening" data-fr="Pré-ouverture">Pre-opening</div><div class="tl-desc" data-en="Hiring · Training · Soft launch" data-fr="Recrutement · Formation · Lancement soft">Hiring · Training · Soft launch</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row" style="border-bottom:none"><div class="tl-date" style="font-weight:500;color:var(--brown)">Dec 10, 2027</div><div class="tl-dot" style="background:var(--gold);width:14px;height:14px;margin-top:3px;flex-shrink:0"></div><div class="tl-body"><div class="tl-title" style="font-family:'Playfair Display',serif;font-size:15px" data-en="Opening — La Mare Brickell" data-fr="Ouverture — La Mare Brickell">Opening — La Mare Brickell</div></div><span class="badge badge-gold">Target</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Personnes clés</div>
-      <div class="row"><span class="dot b"></span><span>Ryan O'Donnell — Ballyhoo, Founder &amp; CEO</span></div>
-      <div class="row"><span class="dot b"></span><span>Jon Farrer — Ballyhoo, President &amp; COO</span></div>
-      <div class="row"><span class="dot b"></span><span>Katie McQuarrie — Ballyhoo, VP Finance</span></div>
-      <div class="row"><span class="dot b"></span><span>Maryon Demoulin — BM Legal · Carla Dulbecco — BM</span></div>
+
+    <!-- ACTIONS -->
+    <div class="pane" id="miami-pane-actions">
+      <div class="act-toolbar">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="section-title" style="margin:0;border:none;padding:0" data-en="Action tracker" data-fr="Suivi actions">Action tracker</span>
+          <span id="miami-edit-hint" style="font-size:11px;color:var(--text-muted);font-style:italic" data-en="— view mode" data-fr="— mode lecture">— view mode</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="flt-btn active" onclick="filterAct('miami','all',this)" data-en="All" data-fr="Toutes">All</button>
+          <button class="flt-btn" onclick="filterAct('miami','OPEN',this)" data-en="Open" data-fr="Ouvertes">Open</button>
+          <button class="flt-btn" onclick="filterAct('miami','IN_PROGRESS',this)" data-en="In progress" data-fr="En cours">In progress</button>
+          <button class="flt-btn" onclick="filterAct('miami','DONE',this)" data-en="Done" data-fr="Faites">Done</button>
+          <button class="add-act-btn" id="miami-add-btn" onclick="addAct('miami')" data-en="+ Add action" data-fr="+ Ajouter">+ Add action</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="at"><thead><tr>
+          <th style="width:36%" data-en="Action" data-fr="Action">Action</th>
+          <th style="width:14%" data-en="Owner" data-fr="Responsable">Owner</th>
+          <th style="width:14%" data-en="Deadline" data-fr="Échéance">Deadline</th>
+          <th style="width:12%" data-en="Priority" data-fr="Priorité">Priority</th>
+          <th style="width:14%" data-en="Status" data-fr="Statut">Status</th>
+          <th style="width:10%"></th>
+        </tr></thead>
+        <tbody id="miami-action-body"><tr><td style="font-weight:500">Confirm outdoor cooking rules</td><td style="font-size:12px;color:var(--text-muted)">Gavin</td><td style="font-size:12px;color:var(--text-muted)">ASAP</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr><tr><td style="font-weight:500">Zoning workshop — Lloyd + Justin + KIKI (layout + cover counts)</td><td style="font-size:12px;color:var(--text-muted)">Lloyd/Justin</td><td style="font-size:12px;color:var(--text-muted)">Wk Apr 20</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr><tr><td style="font-weight:500">KIKI confirms pool bar position</td><td style="font-size:12px;color:var(--text-muted)">BT/KIKI</td><td style="font-size:12px;color:var(--text-muted)">Before May 12</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">KIKI layouts → include in board presentation (confirm Justin)</td><td style="font-size:12px;color:var(--text-muted)">Justin/BT</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Chef's table location — expo line vs central kitchen (KIKI workshop)</td><td style="font-size:12px;color:var(--text-muted)">BT/KIKI</td><td style="font-size:12px;color:var(--text-muted)">KIKI workshop</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Maryon — legal review rent cliff graduated formula</td><td style="font-size:12px;color:var(--text-muted)">Maryon</td><td style="font-size:12px;color:var(--text-muted)">ASAP</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr><tr><td style="font-weight:500">Juno GC tender results (Apr 17) → CapEx benchmark for Miami</td><td style="font-size:12px;color:var(--text-muted)">Gavin</td><td style="font-size:12px;color:var(--text-muted)">Apr 17</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Challenge $9.3M CapEx with Antony + Gavin</td><td style="font-size:12px;color:var(--text-muted)">BT/Antony</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Pool area estimation — Clem review</td><td style="font-size:12px;color:var(--text-muted)">Clem</td><td style="font-size:12px;color:var(--text-muted)">Wk Apr 20</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-PENDING">Pending</span></td><td></td></tr><tr><td style="font-weight:500">Outdoor cooking scenario — Apolline input needed</td><td style="font-size:12px;color:var(--text-muted)">Apolline</td><td style="font-size:12px;color:var(--text-muted)">Wk Apr 20</td><td class="p-NORMAL" style="font-size:12px">Normal</td><td><span class="badge s-PENDING">Pending</span></td><td></td></tr><tr><td style="font-weight:500">Tigrane to call Ramon — sunbed policy alignment</td><td style="font-size:12px;color:var(--text-muted)">Tigrane</td><td style="font-size:12px;color:var(--text-muted)">ASAP</td><td class="p-NORMAL" style="font-size:12px">Normal</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Christine (via Tigrane) — ASPH data: Sunny, Claudie, Felice, Mandoline</td><td style="font-size:12px;color:var(--text-muted)">Tigrane</td><td style="font-size:12px;color:var(--text-muted)">ASAP</td><td class="p-NORMAL" style="font-size:12px">Normal</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Finalize studio kick-off agenda (May 12)</td><td style="font-size:12px;color:var(--text-muted)">Antoine</td><td style="font-size:12px;color:var(--text-muted)">May 5</td><td class="p-NORMAL" style="font-size:12px">Normal</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr></tbody></table>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Next steps</div>
-      <div class="row"><span class="dot r"></span><span>Call 16h00 Paris — aligner sur les points ouverts</span></div>
-      <div class="row"><span class="dot a"></span><span>Post-call : mettre à jour markup</span></div>
-      <div class="row"><span class="dot a"></span><span>Alignement Tigrane / Ryan à Chicago (semaine prochaine)</span></div>
+
+    <!-- POOL -->
+    <div class="pane" id="miami-pane-pool">
+      <div class="section-title" data-en="Pool &amp; Rooftop — open points" data-fr="Piscine &amp; Rooftop — points ouverts">Pool &amp; Rooftop — open points</div>
+      <div class="warning-box"><strong data-en="Critical: " data-fr="Critique : ">Critical: </strong><span data-en="Pool bar position must be confirmed by KIKI before MEP can proceed. Building code requires roof + contamination bund." data-fr="Position bar piscine doit être confirmée par KIKI avant MEP. Code : toit + bund requis.">Pool bar position must be confirmed by KIKI before MEP. Roof + contamination bund required.</span></div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="padding:10px;background:#FEF3CD;border-radius:6px;font-size:12px"><div style="font-weight:500;margin-bottom:4px;color:var(--brown)" data-en="Pool bar position" data-fr="Position bar piscine">Pool bar position</div><div style="color:var(--text-muted)" data-en="KIKI to confirm ASAP · roof + bund required · MEP blocked until confirmed" data-fr="KIKI doit confirmer ASAP · toit + bund requis · MEP bloqué">KIKI to confirm ASAP · roof + bund required · MEP blocked</div><span class="badge badge-red" style="margin-top:6px">Critical</span></div>
+          <div style="padding:10px;background:#FEF3CD;border-radius:6px;font-size:12px"><div style="font-weight:500;margin-bottom:4px;color:var(--brown)" data-en="Outside bar/kitchen rules" data-fr="Règles bar/cuisine extérieur">Outside bar/kitchen rules</div><div style="color:var(--text-muted)" data-en="Roof + enclosable sides required (Dallas/Juno precedent) · Gavin recommends original corner location · Outdoor kitchen rules still being verified" data-fr="Toit + côtés fermables requis (précédent Dallas/Juno) · Gavin recommande emplacement d'angle d'origine · Règles cuisine outdoor en vérification">Roof + enclosable sides required · corner location recommended · outdoor kitchen being verified</div><span class="badge badge-orange" style="margin-top:6px" data-en="In progress" data-fr="En cours">In progress</span></div>
+          <div style="padding:10px;background:#FEF3CD;border-radius:6px;font-size:12px"><div style="font-weight:500;margin-bottom:4px;color:var(--brown)" data-en="Tile code restrictions" data-fr="Restrictions carrelage">Tile code restrictions</div><div style="color:var(--text-muted)" data-en="Very restrictive on colour · Amkin to clarify" data-fr="Très restrictif couleur · Amkin doit clarifier">Very restrictive on colour · Amkin to clarify</div><span class="badge badge-red" style="margin-top:6px">Critical</span></div>
+          <div style="padding:10px;background:#EEF5E6;border-radius:6px;font-size:12px"><div style="font-weight:500;margin-bottom:4px;color:var(--brown)" data-en="Chef's table in kitchen" data-fr="Table du chef en cuisine">Chef's table in kitchen</div><div style="color:var(--text-muted)" data-en="Florida DBPR green light in principle · cleanable surfaces + fully enclosed · expo line vs central to decide at KIKI workshop" data-fr="Florida DBPR feu vert en principe · surfaces nettoyables + espace fermé · expo line vs central — décision workshop KIKI">DBPR green light · expo line vs central to decide</div><span class="badge badge-green" style="margin-top:6px" data-en="Approved in principle" data-fr="Approuvé en principe">Approved in principle</span></div>
+          <div style="padding:10px;background:#F5EFE6;border-radius:6px;font-size:12px"><div style="font-weight:500;margin-bottom:4px;color:var(--brown)">ADA pool lift</div><div style="color:var(--text-muted)" data-en="Required by code · Landlord charge" data-fr="Requis par code · Charge landlord">Required by code · Landlord charge</div><span class="badge badge-green" style="margin-top:6px">Landlord</span></div>
+          <div style="padding:10px;background:#F0EAE0;border-radius:6px;font-size:12px"><div style="font-weight:500;margin-bottom:4px;color:var(--brown)" data-en="Pool operating model" data-fr="Modèle opérationnel piscine">Pool operating model</div><div style="color:var(--text-muted)" data-en="Casual all-day F&amp;B · sunbeds free for hotel + residence guests · Tigrane to align with Ramon" data-fr="F&amp;B casual toute la journée · transats gratuits hôtel + résidences · Tigrane s'aligne avec Ramon">Casual all-day F&amp;B · sunbeds free for hotel/residence guests · Tigrane to call Ramon</div><span class="badge badge-gold" style="margin-top:6px" data-en="To align" data-fr="À aligner">To align</span></div>
+        </div>
+      </div>
+      <div class="section-title" style="margin-top:4px" data-en="PDR — Private Dining" data-fr="PDR — Restauration privée">PDR — Private Dining</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" data-en="PDR configuration — agreed Apr 9" data-fr="Configuration PDR — convenu 9 avr.">PDR configuration — agreed Apr 9</div>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#F5EFE6;border-radius:5px"><span>PDR 1 — closed</span><span style="font-weight:500;color:var(--brown)">15 pax</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#F5EFE6;border-radius:5px"><span data-en="PDR 2 — closed, combinable" data-fr="PDR 2 — fermée, fusionnable">PDR 2 — closed, combinable</span><span style="font-weight:500;color:var(--brown)">30 pax</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#FBF4E3;border-radius:5px"><span data-en="Large open space — groups" data-fr="Grand espace — groupes">Large open space — groups</span><span style="font-weight:500;color:var(--brown)">50+ pax</span></div>
+            <div style="margin-top:4px;padding-top:6px;border-top:1px solid var(--border);font-size:11px">
+              <div><span style="color:var(--brown);font-weight:500">AV closed PDRs: </span>TV, dimmable lighting, independent sound + WiFi</div>
+              <div style="margin-top:2px"><span style="color:var(--brown);font-weight:500" data-en="Music zones: " data-fr="Zones musique : ">Music zones: </span><span data-en="3 zones — terrace / covered terrace / interior" data-fr="3 zones — terrasse / terrasse couverte / intérieur">3 zones — terrace / covered terrace / interior</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-en="PDR operating model — agreed Apr 9" data-fr="Modèle PDR — convenu 9 avr.">PDR operating model — agreed Apr 9</div>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:6px">
+            <div><span style="color:var(--brown);font-weight:500">→ </span><span data-en="Corporate primarily · set menu preferred, à la carte possible" data-fr="Corporate principalement · set menu privilégié, à la carte possible">Corporate primarily · set menu preferred</span></div>
+            <div><span style="color:var(--brown);font-weight:500">→ </span><span data-en="Small/medium: ~5×/week · Large: ~1×/month" data-fr="Petites/moyennes : ~5×/sem · Grande : ~1×/mois">Small/medium: ~5×/week · Large: ~1×/month</span></div>
+            <div><span style="color:var(--brown);font-weight:500">→ </span><span data-en="$130/person · peak: festive season · highly seasonal" data-fr="$130/pers · pic : saison fêtes · très saisonnier">$130/person · peak: festive season · highly seasonal</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="pane" id="miami-pane-team">
+      <div class="section-title" data-en="Internal team" data-fr="Équipe interne">Internal team</div>
+      <div class="card">
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">BT</div><div><div style="font-weight:500;font-size:13px">Benjamin Thouverez</div><div style="font-size:11px;color:var(--text-muted)">CDO · Project lead</div></div></div><span class="badge badge-orange">Lead</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">TS</div><div><div style="font-weight:500;font-size:13px">Tigrane Seydoux</div><div style="font-size:11px;color:var(--text-muted)">CEO · Deal terms + vision</div></div></div><span class="badge badge-red">Founder</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">GB</div><div><div style="font-weight:500;font-size:13px">Gavin Beesley</div><div style="font-size:11px;color:var(--text-muted)">Global Construction Director · Pool + MEP</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">AB</div><div><div style="font-weight:500;font-size:13px">Antoine Bieler</div><div style="font-size:11px;color:var(--text-muted)">Project coordination</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">AC</div><div><div style="font-weight:500;font-size:13px">Antony Chaplin</div><div style="font-size:11px;color:var(--text-muted)">CapEx</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">JL</div><div><div style="font-weight:500;font-size:13px">Joaquin Lassala</div><div style="font-size:11px;color:var(--text-muted)">US strategy · Financial model</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">MD</div><div><div style="font-weight:500;font-size:13px">Maryon Demoulin</div><div style="font-size:11px;color:var(--text-muted)">Legal · Lease review</div></div></div><span class="badge badge-orange">Reviewing</span></div>
+      </div>
+      <div class="section-title" data-en="External partners" data-fr="Partenaires externes">External partners</div>
+      <div class="card">
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">KK</div><div><div style="font-weight:500;font-size:13px">KIKI Design Studio</div><div style="font-size:11px;color:var(--text-muted)">Architecture + interior design · Kick-off May 12</div></div></div><span class="badge badge-gold">Kick-off May 12</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">LB</div><div><div style="font-weight:500;font-size:13px">Lloyd Butcher</div><div style="font-size:11px;color:var(--text-muted)">Architectural Technologist · Layouts</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">JH</div><div><div style="font-weight:500;font-size:13px">Justin Hardy</div><div style="font-size:11px;color:var(--text-muted)">Head of Architecture</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">AM</div><div><div style="font-weight:500;font-size:13px">Amkin</div><div style="font-size:11px;color:var(--text-muted)">General contractor</div></div></div><span class="badge badge-gray">Engaged</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">LF</div><div><div style="font-weight:500;font-size:13px">Harrison — Lee Fordham</div><div style="font-size:11px;color:var(--text-muted)">Local architect · Permit liaison</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">RM</div><div><div style="font-weight:500;font-size:13px">Ramon</div><div style="font-size:11px;color:var(--text-muted)">Landlord contact · Lease</div></div></div><span class="badge badge-orange">Negotiating</span></div>
+      </div>
+    </div>
+
+    <!-- VISION -->
+    <div class="pane" id="miami-pane-vision">
+      <div class="section-title" data-en="Concept &amp; artistic direction" data-fr="Concept &amp; direction artistique">Concept &amp; artistic direction</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" data-en="Inspiration references" data-fr="Références d'inspiration">Inspiration references</div>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:6px">
+            <div><span style="color:var(--gold);font-weight:500">★ </span><span data-en="Elephante — Miami rooftop · outdoor, pool, energy" data-fr="Elephante — rooftop Miami · outdoor, piscine, énergie">Elephante — Miami rooftop · outdoor, pool, energy</span></div>
+            <div><span style="color:var(--gold);font-weight:500">★ </span><span data-en="Puglia countryside — textures, terracotta, organic" data-fr="Campagne des Pouilles — textures, terre cuite, organique">Puglia countryside — textures, terracotta, organic</span></div>
+            <div><span style="color:var(--gold);font-weight:500">★ </span><span data-en="Open kitchen — theatre of cooking, live prep visible" data-fr="Cuisine ouverte — théâtre culinaire">Open kitchen — theatre of cooking, live prep visible</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-en="Vision points — to confirm with Tigrane" data-fr="Points vision — à confirmer avec Tigrane">Vision points — to confirm with Tigrane</div>
+          <div style="font-size:11px;padding:6px 8px;background:#FEF3CD;border-radius:5px;margin-bottom:8px" data-en="Source: Master Document kick-off — not yet confirmed directly by Tigrane" data-fr="Source : Master Document kick-off — pas encore confirmé directement par Tigrane">Source: Master Document kick-off — not yet directly confirmed by Tigrane</div>
+          <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:5px">
+            <div><span style="color:var(--orange);font-weight:500">? </span><span data-en="More greenery and organic textures" data-fr="Plus de verdure et textures organiques">More greenery and organic textures</span></div>
+            <div><span style="color:var(--orange);font-weight:500">? </span><span data-en="Elevated bar program — cocktails central to identity" data-fr="Programme bar élevé — cocktails centraux">Elevated bar program — cocktails central to identity</span></div>
+            <div><span style="color:var(--orange);font-weight:500">? </span><span data-en="Acoustic design from the start" data-fr="Design acoustique dès le départ">Acoustic design from the start</span></div>
+            <div><span style="color:var(--orange);font-weight:500">? </span><span data-en="Evening transition — restaurant to lounge / late night" data-fr="Transition soirée — restaurant vers lounge">Evening transition — restaurant to lounge / late night</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="section-title" data-en="Revenue model — covers &amp; seasonality" data-fr="Modèle revenus — couverts &amp; saisonnalité">Revenue model — covers &amp; seasonality</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" data-en="Covers plan (kitchen design basis)" data-fr="Plan couverts (base conception cuisine)">Covers plan (kitchen design basis)</div>
+          <div style="font-size:12px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#EEF5E6;border-radius:5px"><span style="font-weight:500;color:var(--green)" data-en="Kitchen capacity" data-fr="Capacité cuisine">Kitchen capacity</span><span style="font-weight:500;color:var(--green)" data-en="250 simultaneous" data-fr="250 simultanés">250 simultaneous</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)" data-en="Interior (year-round)" data-fr="Intérieur (toute l'année)">Interior (year-round)</span><span style="font-weight:500">100 covers</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)" data-en="Exterior — Oct–Apr only" data-fr="Extérieur — oct–avr uniquement">Exterior — Oct–Apr only</span><span style="font-weight:500">150 covers</span></div>
+            <div style="padding:6px 8px;background:#FEF3CD;border-radius:5px;font-size:11px" data-en="May–Sep: terrace stored, very low outdoor use" data-fr="Mai–sept : terrasse rangée, outdoor très faible">May–Sep: terrace stored, very low outdoor use</div>
+            <div style="padding:6px 8px;background:#F0EAE0;border-radius:5px;font-size:11px" data-en="Cover density reference: 1 cover / 18 sqft (Lloyd from Juno)" data-fr="Référence densité : 1 couvert / 18 sqft (Lloyd, ref. Juno)">Cover density reference: 1 cover / 18 sqft (Lloyd from Juno)</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-en="ASPH benchmarks — pending Christine data" data-fr="Benchmarks ASPH — en attente données Christine">ASPH benchmarks — pending Christine data</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px" data-en="Requested via Tigrane (Apr 9): rotations, ASPH net/gross (incl. tips + service charge), lunch vs dinner split + seasonality" data-fr="Demandé via Tigrane (9 avr.) : rotations, ASPH net/gross (tips + service charge compris), répartition lunch/dîner + saisonnalité">Requested via Tigrane (Apr 9): rotations, ASPH net/gross (incl. tips + service charge), lunch vs dinner split</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="badge badge-orange">Sunny Steakhouse</span>
+            <span class="badge badge-orange">Claudie</span>
+            <span class="badge badge-orange">Felice</span>
+            <span class="badge badge-orange">Mandoline</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-title" data-en="Brickell — revenue scale reference (BT email Apr 8)" data-fr="Brickell — référence volumes CA (email BT 8 avr.)">Brickell — revenue scale reference (BT email Apr 8)</div>
+      <div class="warning-box" style="font-size:11px" data-en="Context only — not used as operational benchmark." data-fr="Contexte uniquement — non utilisé comme benchmark opérationnel.">Context only — not used as operational benchmark.</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="rt">
+          <thead><tr><th>Restaurant</th><th>Location</th><th>Sales</th><th>Sqft</th><th>$/sqft</th></tr></thead>
+          <tbody>
+            <tr><td>Casa Tua Cucina</td><td style="font-size:11px;color:var(--text-muted)">BCC</td><td>$34M</td><td>18,000</td><td>$1,889</td></tr>
+            <tr><td>Komodo</td><td style="font-size:11px;color:var(--text-muted)">Brickell</td><td>$30M</td><td>17,000</td><td>$1,765</td></tr>
+            <tr><td>Gekko</td><td style="font-size:11px;color:var(--text-muted)">Brickell</td><td>$26M</td><td>8,412</td><td>$3,091</td></tr>
+            <tr><td>Sexy Fish</td><td style="font-size:11px;color:var(--text-muted)">Brickell</td><td>$23.8M</td><td>14,432</td><td>$1,651</td></tr>
+            <tr><td>Marion + El Tucan</td><td style="font-size:11px;color:var(--text-muted)">Brickell</td><td>$22M</td><td>17,017</td><td>$1,292</td></tr>
+            <tr><td>LPM</td><td style="font-size:11px;color:var(--text-muted)">Brickell</td><td>$11M</td><td>4,800</td><td>$2,292</td></tr>
+            <tr><td>North Italia</td><td style="font-size:11px;color:var(--text-muted)">MBV</td><td>$10.7M</td><td>8,637</td><td>$1,239</td></tr>
+            <tr><td>Delilah</td><td style="font-size:11px;color:var(--text-muted)">Brickell</td><td>$10.1M</td><td>10,600</td><td>$953</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- GLASGOW -->
-<div class="page" id="p3">
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">Loyer</div><div class="kpi-value">~£500k</div><div class="kpi-sub">2 ans rent free</div></div>
-    <div class="kpi"><div class="kpi-label">Topline BP</div><div class="kpi-value">£5,8M</div></div>
-    <div class="kpi"><div class="kpi-label">People costs</div><div class="kpi-value">33%</div><div class="kpi-sub">≈ Manchester</div></div>
-    <div class="kpi"><div class="kpi-label">F&amp;B</div><div class="kpi-value">23,3%</div></div>
-    <div class="kpi"><div class="kpi-label">Statut</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge bg">Momentum</span></div></div>
+<!-- ══════════════════════════════════════════
+     CHARLOTTE
+══════════════════════════════════════════ -->
+<div class="project-view" id="view-charlotte">
+  <div class="proj-hdr">
+    <div class="proj-hdr-left">
+      <h1>Charlotte QBC</h1>
+      <p data-en="Lease negotiation · Updated Apr 16, 2026" data-fr="Négociation bail · Mis à jour 16 avr. 2026">Lease negotiation · Updated Apr 16, 2026</p>
+    </div>
+    <button class="edit-toggle-btn" id="charlotteEditBtn" onclick="toggleEdit('charlotte')"><span id="charlotteEditIcon">✏</span> <span id="charlotteEditLabel">Edit actions</span></button>
   </div>
-  <div class="focus-grid">
-    <div class="focus">
-      <div class="focus-title">Derniers signaux (15 avr)</div>
-      <div class="row"><span class="dot g"></span><span>BP Validation envoyé ce matin → Peppe, Enrico, Gianmarco : validation hypothèses opé demandée</span></div>
-      <div class="row"><span class="dot g"></span><span>"Good momentum on landlord negotiations" · Intention : "move forward decisively" si construction OK</span></div>
-      <div class="row"><span class="dot a"></span><span>Ben → Joaquin : "Ajoute un exec summary dans l'email"</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Business plan</div>
-      <div class="row"><span class="dot g"></span><span>OPEX calé sur Manchester (primary comparable people costs)</span></div>
-      <div class="row"><span class="dot b"></span><span>Topline £5,8M · People 33% · Maintenance 1,1% · F&amp;B 23,3%</span></div>
-      <div class="row"><span class="dot a"></span><span>Loyer challengé par Tigrane — peu de marge de manœuvre</span></div>
-      <div class="row"><span class="dot r"></span><span>CAPEX : point critique · Validation construction → GO / NO GO</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Risques</div>
-      <div class="row"><span class="dot r"></span><span>CAPEX : condition de go/no-go — à valider par construction team</span></div>
-      <div class="row"><span class="dot a"></span><span>Profil dinner-heavy vs. concurrence lunch-heavy (cf. Birmingham) — point Enrico</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Next steps</div>
-      <div class="row"><span class="dot r"></span><span>Peppe / Enrico / Gianmarco : valider hypothèses opé du BP</span></div>
-      <div class="row"><span class="dot r"></span><span>Construction team : validation CAPEX → GO / NO GO</span></div>
-      <div class="row"><span class="dot a"></span><span>Joaquin : ajouter exec summary dans les prochains envois</span></div>
-    </div>
+  <div class="alert-bar">
+    <div class="al"><span class="dot dot-red"></span><strong data-en="Lease call Apr 15 — rescheduled 11am CST by Tigrane" data-fr="Call bail 15 avr. — décalé 11h CST par Tigrane">Lease call Apr 15 — rescheduled 11am CST by Tigrane</strong></div>
+    <div class="al"><span class="dot dot-orange"></span><span data-en="Tigrane + Ryan O'Donnell — Chicago alignment week of Apr 20" data-fr="Tigrane + Ryan O'Donnell — alignment Chicago sem. 20 avr.">Tigrane + Ryan — Chicago alignment week of Apr 20</span></div>
   </div>
-</div>
-
-<!-- FRANKFURT / VE -->
-<div class="page" id="p4">
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">Topline cible</div><div class="kpi-value">7,2M€</div></div>
-    <div class="kpi"><div class="kpi-label">Capex cible</div><div class="kpi-value">3,6M€</div></div>
-    <div class="kpi"><div class="kpi-label">Layout</div><div class="kpi-value" style="font-size:12px;padding-top:4px"><span class="badge ba">En révision</span></div></div>
+  <div class="tabs" id="charlotte-tabs">
+    <div class="tab active" onclick="showTab('charlotte','overview')" data-en="Overview" data-fr="Vue d'ensemble">Overview</div>
+    <div class="tab" onclick="showTab('charlotte','timeline')" data-en="Timeline" data-fr="Calendrier">Timeline</div>
+    <div class="tab" onclick="showTab('charlotte','actions')" data-en="Actions" data-fr="Actions">Actions</div>
+    <div class="tab" onclick="showTab('charlotte','team')" data-en="Team" data-fr="Équipe">Team</div>
   </div>
-  <div class="focus-grid">
-    <div class="focus">
-      <div class="focus-title">Frankfurt — état</div>
-      <div class="row"><span class="dot g"></span><span>Objectif top-down confirmé (Ben 7 avr) : 7,2M€ / 3,6M€ capex · Peppe OK</span></div>
-      <div class="row"><span class="dot a"></span><span>Layout en révision (covers + PDR) · BP bottom-up à mettre à jour ensuite</span></div>
-      <div class="row"><span class="dot b"></span><span>Terrasse : 715k€ · Bailleur OK pour décaler ouverture · Sans terrasse : 4M€ · Décision en suspens</span></div>
+  <div class="content">
+    <div class="pane active" id="charlotte-pane-overview">
+      <div class="grid-3">
+        <div class="metric"><div class="metric-label">Phase</div><div class="metric-value" style="font-size:18px">Lease</div><div class="metric-sub">Negotiation in progress</div></div>
+        <div class="metric"><div class="metric-label" data-en="Lease call" data-fr="Call bail">Lease call</div><div class="metric-value" style="color:var(--red);font-size:18px">Apr 15</div><div class="metric-sub">11am CST — rescheduled</div></div>
+        <div class="metric"><div class="metric-label" data-en="Opening target" data-fr="Ouverture cible">Opening target</div><div class="metric-value" style="font-size:18px">T4 2027</div><div class="metric-sub" data-en="Fit-out Feb 2027 · Handover Sep 2027" data-fr="Fit-out fév 2027 · Handover sept 2027">Fit-out Feb 2027 · Handover Sep 2027</div></div>
+      </div>
+      <div class="section-title" data-en="Signals" data-fr="Signaux">Signals</div>
+      <div class="card">
+        <div class="signal"><span class="sdot dot-red"></span><div style="flex:1"><div class="signal-title" data-en="New lease version received — Apr 10" data-fr="Nouvelle version bail reçue — 10 avr.">New lease version received — Apr 10</div><div class="signal-meta" data-en="Larry's comments + Maryon proposed responses in green. Tigrane: align with Ryan in Chicago (week of Apr 20)." data-fr="Commentaires Larry + réponses Maryon en vert. Tigrane : aligner avec Ryan à Chicago (sem. 20 avr.).">Larry's comments + Maryon proposed responses. Tigrane: align with Ryan in Chicago week of Apr 20.</div></div><span class="badge badge-orange" data-en="In progress" data-fr="En cours">In progress</span></div>
+        <div class="signal"><span class="sdot dot-red"></span><div style="flex:1"><div class="signal-title" data-en="Gavin comments (in blue) submitted to Maryon — Apr 14" data-fr="Commentaires Gavin (en bleu) transmis à Maryon — 14 avr.">Gavin comments submitted to Maryon — Apr 14 (in blue)</div><div class="signal-meta" data-en="Gavin on flight during the call — comments in blue submitted ahead of time." data-fr="Gavin en vol pendant le call — commentaires soumis en amont.">Gavin on flight during call — comments submitted in advance.</div></div><span class="badge badge-green" data-en="Done" data-fr="Fait">Done</span></div>
+        <div class="signal"><span class="sdot dot-orange"></span><div style="flex:1"><div class="signal-title" data-en="5-mile radius restriction confirmed — Ballyhoo cannot commit yet" data-fr="Restriction rayon 5 miles confirmée — Ballyhoo ne peut pas s'engager encore">5-mile radius restriction confirmed — Ballyhoo cannot commit yet</div><div class="signal-meta" data-en="Source: Gavin email Apr 1. Remaining open point in lease." data-fr="Source : email Gavin 1 avr. Point ouvert restant du bail.">Source: Gavin Apr 1. Remaining open point in lease.</div></div><span class="badge badge-orange" data-en="Watch" data-fr="Attention">Watch</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">VE — état</div>
-      <div class="row"><span class="dot g"></span><span>Berlin KE : bien positionné (Antony, 13 avr)</span></div>
-      <div class="row"><span class="dot r"></span><span>Gendarmenmarkt : problèmes identifiés</span></div>
-      <div class="row"><span class="dot a"></span><span>Bel Mondo : sync Antoine / Antony à organiser</span></div>
+    <div class="pane" id="charlotte-pane-timeline">
+      <div class="section-title" data-en="Timeline" data-fr="Calendrier">Timeline</div>
+      <div class="card">
+        <div class="tl-row"><div class="tl-date">Apr 1, 2026</div><div class="tl-dot tl-dot-done"></div><div class="tl-body"><div class="tl-title" data-en="Comments sent to landlord" data-fr="Commentaires envoyés au landlord">Comments sent to landlord</div></div><span class="badge badge-green">Done</span></div>
+        <div class="tl-row"><div class="tl-date">Apr 10, 2026</div><div class="tl-dot tl-dot-done"></div><div class="tl-body"><div class="tl-title" data-en="New lease version received" data-fr="Nouvelle version bail reçue">New lease version received</div><div class="tl-desc" data-en="Larry comments + Maryon responses" data-fr="Commentaires Larry + réponses Maryon">Larry comments + Maryon responses</div></div><span class="badge badge-green">Done</span></div>
+        <div class="tl-row"><div class="tl-date">Apr 15, 2026</div><div class="tl-dot tl-dot-active"></div><div class="tl-body"><div class="tl-title" data-en="Lease call — BMG + Ballyhoo" data-fr="Call bail — BMG + Ballyhoo">Lease call — BMG + Ballyhoo</div><div class="tl-desc">Tigrane, Maryon, Gavin · Jon Farrer, Ryan, Katie (Ballyhoo) · 11am CST</div></div><span class="badge badge-orange" data-en="Today" data-fr="Aujourd'hui">Today</span></div>
+        <div class="tl-row"><div class="tl-date">Wk Apr 20, 2026</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title" data-en="Tigrane + Ryan — Chicago alignment" data-fr="Tigrane + Ryan — alignment Chicago">Tigrane + Ryan — Chicago alignment</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row"><div class="tl-date">Feb 2027</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title" data-en="Fit-out start" data-fr="Démarrage aménagement">Fit-out start</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row"><div class="tl-date">Sep 2027</div><div class="tl-dot tl-dot-todo"></div><div class="tl-body"><div class="tl-title">Handover</div></div><span class="badge badge-gray" data-en="Upcoming" data-fr="À venir">Upcoming</span></div>
+        <div class="tl-row" style="border-bottom:none"><div class="tl-date">T4 2027</div><div class="tl-dot" style="background:var(--gold);width:14px;height:14px;margin-top:3px;flex-shrink:0"></div><div class="tl-body"><div class="tl-title" style="font-family:'Playfair Display',serif">Opening Charlotte QBC</div></div><span class="badge badge-gold">Target</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Next steps</div>
-      <div class="row"><span class="dot r"></span><span>Frankfurt : finaliser layout → mettre à jour BP bottom-up</span></div>
-      <div class="row"><span class="dot r"></span><span>Décision terrasse Frankfurt</span></div>
-      <div class="row"><span class="dot a"></span><span>Bel Mondo : organiser sync · Gendarmenmarkt : plan d'action</span></div>
+    <div class="pane" id="charlotte-pane-actions">
+      <div class="act-toolbar">
+        <div style="display:flex;align-items:center;gap:10px"><span class="section-title" style="margin:0;border:none;padding:0">Action tracker</span><span id="charlotte-edit-hint" style="font-size:11px;color:var(--text-muted);font-style:italic">— view mode</span></div>
+        <div style="display:flex;gap:8px"><button class="flt-btn active" onclick="filterAct('charlotte','all',this)">All</button><button class="flt-btn" onclick="filterAct('charlotte','OPEN',this)">Open</button><button class="flt-btn" onclick="filterAct('charlotte','DONE',this)">Done</button><button class="add-act-btn" id="charlotte-add-btn" onclick="addAct('charlotte')">+ Add</button></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="at"><thead><tr><th style="width:40%">Action</th><th style="width:14%">Owner</th><th style="width:14%">Deadline</th><th style="width:14%">Priority</th><th style="width:14%">Status</th><th style="width:4%"></th></tr></thead><tbody id="charlotte-action-body"><tr><td style="font-weight:500">Lease call — BMG + Ballyhoo (11am CST)</td><td style="font-size:12px;color:var(--text-muted)">Tigrane/Maryon</td><td style="font-size:12px;color:var(--text-muted)">Apr 15</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr><tr><td style="font-weight:500">Tigrane + Ryan O'Donnell — Chicago alignment</td><td style="font-size:12px;color:var(--text-muted)">Tigrane</td><td style="font-size:12px;color:var(--text-muted)">Wk Apr 20</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Legal team response post-call</td><td style="font-size:12px;color:var(--text-muted)">Maryon</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-PENDING">Pending</span></td><td></td></tr><tr><td style="font-weight:500">Lease signature</td><td style="font-size:12px;color:var(--text-muted)">Maryon/Carla</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-PENDING">Pending</span></td><td></td></tr></tbody></table></div>
     </div>
-  </div>
-</div>
-
-<!-- AUTRES US -->
-<div class="page" id="p5">
-  <div class="focus-grid">
-    <div class="focus">
-      <div class="focus-title">Miami — Midtown</div>
-      <div class="row"><span class="dot r"></span><span>Bailleur ne bouge pas sur les terms</span></div>
-      <div class="row"><span class="dot a"></span><span>Discussion P2P Tigrane / Alex toujours en cours</span></div>
-      <div class="row"><span class="dot b"></span><span>Stratégie : levier via deal Sunset (Joaquin)</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Miami — Galleria / Carmine's</div>
-      <div class="row"><span class="dot a"></span><span>Deal terms insuffisants · BP Joaquin · Layout Justin en cours</span></div>
-      <div class="row"><span class="dot gr"></span><span>Coral Gables : quelques leads, rien de concret</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">West Palm Beach</div>
-      <div class="row"><span class="dot a"></span><span>~6 000 ft² · Tigrane a visité · Surface et emplacement à creuser</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Universal</div>
-      <div class="row"><span class="dot gr"></span><span>Premier proposal soumis · Joaquin a rencontré l'équipe</span></div>
-      <div class="row"><span class="dot a"></span><span>Structure encore peu claire</span></div>
-    </div>
-    <div class="focus">
-      <div class="focus-title">Prague / Pologne JV · Warsaw</div>
-      <div class="row"><span class="dot gr"></span><span>Prague / Pologne : projets avancent, à préciser</span></div>
-      <div class="row"><span class="dot gr"></span><span>Warsaw : visite terrain effectuée (8 avr) · Bianka + Kevork WS Concept</span></div>
+    <div class="pane" id="charlotte-pane-team">
+      <div class="section-title">Team</div>
+      <div class="card">
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">TS</div><div><div style="font-weight:500;font-size:13px">Tigrane Seydoux</div><div style="font-size:11px;color:var(--text-muted)">CEO · Deal lead</div></div></div><span class="badge badge-red">Founder</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">BT</div><div><div style="font-weight:500;font-size:13px">Benjamin Thouverez</div><div style="font-size:11px;color:var(--text-muted)">CDO</div></div></div><span class="badge badge-orange">Lead</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">MD</div><div><div style="font-weight:500;font-size:13px">Maryon Demoulin</div><div style="font-size:11px;color:var(--text-muted)">Legal · Lease</div></div></div><span class="badge badge-orange">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">GB</div><div><div style="font-weight:500;font-size:13px">Gavin Beesley</div><div style="font-size:11px;color:var(--text-muted)">Construction Director</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av">CD</div><div><div style="font-weight:500;font-size:13px">Carla Dulbecco</div><div style="font-size:11px;color:var(--text-muted)">Legal support</div></div></div><span class="badge badge-gold">Active</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">JF</div><div><div style="font-weight:500;font-size:13px">Jon Farrer — Ballyhoo</div><div style="font-size:11px;color:var(--text-muted)">Partner, President &amp; COO</div></div></div><span class="badge badge-gray">Partner</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">RO</div><div><div style="font-weight:500;font-size:13px">Ryan O'Donnell — Ballyhoo</div><div style="font-size:11px;color:var(--text-muted)">Founder &amp; CEO</div></div></div><span class="badge badge-gray">Partner</span></div>
+        <div class="team-row"><div style="display:flex;align-items:center;gap:10px"><div class="av av-ext">KM</div><div><div style="font-weight:500;font-size:13px">Katie McQuarrie — Ballyhoo</div><div style="font-size:11px;color:var(--text-muted)">VP Finance</div></div></div><span class="badge badge-gray">Partner</span></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- STRATÉGIQUE -->
-<div class="page" id="p6">
-  <div class="focus-grid">
-    <div class="focus">
-      <div class="focus-title">Build 4 Less</div>
-      <div class="row"><span class="dot g"></span><span>1ers workshops fin mars (Londres) · Objectif −25% capex · Bonne dynamique</span></div>
-      <div class="row"><span class="dot a"></span><span>Prochains workshops début mai</span></div>
-      <div class="row"><span class="dot gr"></span><span>VCP partagé au Board le 10 avr (William)</span></div>
+<!-- ══════════════════════════════════════════
+     JUNO BEACH
+══════════════════════════════════════════ -->
+<div class="project-view" id="view-juno">
+  <div class="proj-hdr"><div class="proj-hdr-left"><h1>Juno Beach</h1><p data-en="Pre-construction · Updated Apr 16, 2026" data-fr="Pré-construction · Mis à jour 16 avr. 2026">Pre-construction · Updated Apr 16, 2026</p></div><button class="edit-toggle-btn" id="junoEditBtn" onclick="toggleEdit('juno')"><span id="junoEditIcon">✏</span> <span id="junoEditLabel">Edit actions</span></button></div>
+  <div class="alert-bar"><div class="al"><span class="dot dot-red"></span><strong data-en="GC tender due Apr 17 — 4 contractors · +3 weeks delay vs plan" data-fr="Tender GC dû 17 avr. — 4 entreprises · +3 sem. retard">GC tender due Apr 17 — 4 contractors · +3 weeks delay</strong></div></div>
+  <div class="tabs" id="juno-tabs"><div class="tab active" onclick="showTab('juno','overview')">Overview</div><div class="tab" onclick="showTab('juno','timeline')">Timeline</div><div class="tab" onclick="showTab('juno','actions')">Actions</div></div>
+  <div class="content">
+    <div class="pane active" id="juno-pane-overview">
+      <div class="grid-3">
+        <div class="metric"><div class="metric-label">GC tender</div><div class="metric-value" style="color:var(--red);font-size:18px">Apr 17</div><div class="metric-sub">4 contractors</div></div>
+        <div class="metric"><div class="metric-label">Handover target</div><div class="metric-value" style="font-size:18px">Oct 2026</div><div class="metric-sub">+3 weeks vs plan</div></div>
+        <div class="metric"><div class="metric-label">Structure</div><div class="metric-value" style="font-size:18px;color:var(--orange)">Open</div><div class="metric-sub">OPCO/PROPCO TBD</div></div>
+      </div>
+      <div class="section-title">Signals</div>
+      <div class="card">
+        <div class="signal"><span class="sdot dot-red"></span><div style="flex:1"><div class="signal-title" data-en="GC tender due Apr 17 — 4 contractors" data-fr="Tender GC dû 17 avr. — 4 entreprises">GC tender due Apr 17 — 4 contractors</div><div class="signal-meta" data-en="Source: Gavin Mar 31. +3 weeks delay vs original plan. Results will serve as CapEx benchmark for Miami La Mare." data-fr="Source : Gavin 31 mars. +3 sem. retard vs plan. Résultats = benchmark CapEx Miami La Mare.">Source: Gavin Mar 31. Results will benchmark Miami La Mare CapEx.</div></div><span class="badge badge-red">Critical</span></div>
+        <div class="signal"><span class="sdot dot-orange"></span><div style="flex:1"><div class="signal-title" data-en="OPCO/PROPCO structure open with Ballyhoo" data-fr="Structure OPCO/PROPCO ouverte avec Ballyhoo">OPCO/PROPCO structure open with Ballyhoo</div><div class="signal-meta" data-en="Decision pending — impacts financial model and CapEx split." data-fr="Décision en attente — impact modèle financier et répartition CapEx.">Decision pending — impacts financial model and CapEx split.</div></div><span class="badge badge-orange">Open</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">KIKI Studio — impact capex</div>
-      <div class="row"><span class="dot r"></span><span>Recharge capex KIKI vers projets dev impossible (timesheets, CAC)</span></div>
-      <div class="row"><span class="dot r"></span><span>Impact : décalage ouvertures plusieurs mois (Dallas 6-9 mois · Circolo / The Anchor : idem)</span></div>
-      <div class="row"><span class="dot a"></span><span>Pour les US : William va regarder ce qui est possible</span></div>
+    <div class="pane" id="juno-pane-timeline">
+      <div class="section-title">Timeline</div>
+      <div class="card">
+        <div class="tl-row"><div class="tl-date">Apr 17, 2026</div><div class="tl-dot tl-dot-active"></div><div class="tl-body"><div class="tl-title">GC tender deadline — 4 contractors</div><div class="tl-desc" data-en="Results → benchmark for Miami CapEx" data-fr="Résultats → benchmark CapEx Miami">Results → benchmark for Miami CapEx</div></div><span class="badge badge-orange">Upcoming</span></div>
+        <div class="tl-row" style="border-bottom:none"><div class="tl-date">Oct 2026</div><div class="tl-dot" style="background:var(--gold);width:14px;height:14px;margin-top:3px;flex-shrink:0"></div><div class="tl-body"><div class="tl-title" style="font-family:'Playfair Display',serif">Handover target</div><div class="tl-desc">+3 weeks vs plan</div></div><span class="badge badge-gold">Target</span></div>
+      </div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Big Mamma IA</div>
-      <div class="row"><span class="dot a"></span><span>En cours de structuration avec Thomas et Greg</span></div>
+    <div class="pane" id="juno-pane-actions">
+      <div class="act-toolbar"><div style="display:flex;align-items:center;gap:10px"><span class="section-title" style="margin:0;border:none;padding:0">Action tracker</span><span id="juno-edit-hint" style="font-size:11px;color:var(--text-muted);font-style:italic">— view mode</span></div><div style="display:flex;gap:8px"><button class="flt-btn active" onclick="filterAct('juno','all',this)">All</button><button class="add-act-btn" id="juno-add-btn" onclick="addAct('juno')">+ Add</button></div></div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="at"><thead><tr><th style="width:40%">Action</th><th>Owner</th><th>Deadline</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody id="juno-action-body"><tr><td style="font-weight:500">GC tender results — 4 contractors</td><td style="font-size:12px;color:var(--text-muted)">Gavin</td><td style="font-size:12px;color:var(--text-muted)">Apr 17</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">OPCO/PROPCO decision with Ballyhoo</td><td style="font-size:12px;color:var(--text-muted)">BT</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr></tbody></table></div>
     </div>
-    <div class="focus">
-      <div class="focus-title">Équipe</div>
-      <div class="row"><span class="dot a"></span><span>Passation Apolline → Cat : en cours · Apolline en vacances jusqu'au 20 avr</span></div>
-      <div class="row"><span class="dot gr"></span><span>Méthodo Antoine : à clarifier</span></div>
+  </div>
+</div>
+
+<!-- BERLIN GM -->
+<div class="project-view" id="view-berlin-gm">
+  <div class="proj-hdr"><div class="proj-hdr-left"><h1>Berlin Gendarmenmarkt</h1><p data-en="Construction · Updated Apr 16, 2026" data-fr="Construction · Mis à jour 16 avr. 2026">Construction · Updated Apr 16, 2026</p></div><button class="edit-toggle-btn" id="berlin-gmEditBtn" onclick="toggleEdit('berlin-gm')"><span id="berlin-gmEditIcon">✏</span> <span id="berlin-gmEditLabel">Edit actions</span></button></div>
+  <div class="alert-bar"><div class="al"><span class="dot dot-orange"></span><strong data-en="VE issues open — Antony, Apr 13" data-fr="VE issues ouverts — Antony, 13 avr.">VE issues open — Antony, Apr 13</strong></div><div class="al"><span class="dot dot-green"></span><span data-en="VE in good position overall" data-fr="VE en bonne position globale">VE in good position overall</span></div></div>
+  <div class="tabs" id="berlin-gm-tabs"><div class="tab active" onclick="showTab('berlin-gm','overview')">Overview</div><div class="tab" onclick="showTab('berlin-gm','timeline')">Timeline</div><div class="tab" onclick="showTab('berlin-gm','actions')">Actions</div></div>
+  <div class="content">
+    <div class="pane active" id="berlin-gm-pane-overview">
+      <div class="grid-3">
+        <div class="metric"><div class="metric-label">Phase</div><div class="metric-value" style="font-size:18px">Construction</div></div>
+        <div class="metric"><div class="metric-label">Handover target</div><div class="metric-value" style="font-size:18px">May 18</div><div class="metric-sub">2026</div></div>
+        <div class="metric"><div class="metric-label">General contractor</div><div class="metric-value" style="font-size:16px">Stapelbroek</div><div class="metric-sub">Weekly reports</div></div>
+      </div>
+      <div class="section-title">Signals</div>
+      <div class="card">
+        <div class="signal"><span class="sdot dot-orange"></span><div style="flex:1"><div class="signal-title" data-en="VE issues — Antony, Apr 13" data-fr="VE issues — Antony, 13 avr.">VE issues — Antony, Apr 13</div><div class="signal-meta" data-en="Points of value engineering to resolve before final sign-off." data-fr="Points de value engineering à résoudre avant validation finale.">Points of value engineering to resolve before final sign-off.</div></div><span class="badge badge-orange" data-en="In progress" data-fr="En cours">In progress</span></div>
+        <div class="signal"><span class="sdot dot-green"></span><div style="flex:1"><div class="signal-title" data-en="VE in good position overall — Antony, Apr 13" data-fr="VE en bonne position globale — Antony, 13 avr.">VE in good position overall — Antony, Apr 13</div></div><span class="badge badge-green" data-en="On track" data-fr="En bonne voie">On track</span></div>
+        <div class="signal"><span class="sdot dot-gold"></span><div style="flex:1"><div class="signal-title" data-en="Weekly reports — Stapelbroek GC + Mark on site" data-fr="Rapports hebdomadaires — Stapelbroek GC + Mark sur site">Weekly reports — Stapelbroek GC + Mark on site</div></div><span class="badge badge-gold" data-en="Ongoing" data-fr="En cours">Ongoing</span></div>
+      </div>
+    </div>
+    <div class="pane" id="berlin-gm-pane-timeline">
+      <div class="section-title">Timeline</div>
+      <div class="card">
+        <div class="tl-row"><div class="tl-date">Ongoing</div><div class="tl-dot tl-dot-active"></div><div class="tl-body"><div class="tl-title" data-en="Construction · weekly reports Stapelbroek" data-fr="Construction · rapports hebdo Stapelbroek">Construction · weekly reports Stapelbroek</div></div><span class="badge badge-orange" data-en="In progress" data-fr="En cours">In progress</span></div>
+        <div class="tl-row" style="border-bottom:none"><div class="tl-date">May 18, 2026</div><div class="tl-dot" style="background:var(--gold);width:14px;height:14px;margin-top:3px;flex-shrink:0"></div><div class="tl-body"><div class="tl-title" style="font-family:'Playfair Display',serif">Handover target</div></div><span class="badge badge-gold">Target</span></div>
+      </div>
+    </div>
+    <div class="pane" id="berlin-gm-pane-actions">
+      <div class="act-toolbar"><div style="display:flex;align-items:center;gap:10px"><span class="section-title" style="margin:0;border:none;padding:0">Action tracker</span><span id="berlin-gm-edit-hint" style="font-size:11px;color:var(--text-muted);font-style:italic">— view mode</span></div><div style="display:flex;gap:8px"><button class="flt-btn active" onclick="filterAct('berlin-gm','all',this)">All</button><button class="add-act-btn" id="berlin-gm-add-btn" onclick="addAct('berlin-gm')">+ Add</button></div></div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="at"><thead><tr><th style="width:40%">Action</th><th>Owner</th><th>Deadline</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody id="berlin-gm-action-body"><tr><td style="font-weight:500">Resolve VE issues — Antony</td><td style="font-size:12px;color:var(--text-muted)">Antony</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr><tr><td style="font-weight:500">Confirm handover May 18</td><td style="font-size:12px;color:var(--text-muted)">Gavin</td><td style="font-size:12px;color:var(--text-muted)">Apr 30</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- BERLIN KE -->
+<div class="project-view" id="view-berlin-ke">
+  <div class="proj-hdr"><div class="proj-hdr-left"><h1>Berlin Kranzler Eck</h1><p data-en="Construction · Updated Apr 16, 2026" data-fr="Construction · Mis à jour 16 avr. 2026">Construction · Updated Apr 16, 2026</p></div><button class="edit-toggle-btn" id="berlin-keEditBtn" onclick="toggleEdit('berlin-ke')"><span id="berlin-keEditIcon">✏</span> <span id="berlin-keEditLabel">Edit actions</span></button></div>
+  <div class="alert-bar"><div class="al"><span class="dot dot-orange"></span><strong data-en="Opening 2026 at risk — landlord works dependency" data-fr="Ouverture 2026 à risque — dépendance travaux landlord">Opening 2026 at risk — landlord works dependency</strong></div><div class="al"><span class="dot dot-green"></span><span data-en="CapEx reduced to €4,451,886 — VE good position" data-fr="CapEx réduit à €4,451,886 — VE bonne position">CapEx reduced to €4,451,886 — VE good position</span></div></div>
+  <div class="tabs" id="berlin-ke-tabs"><div class="tab active" onclick="showTab('berlin-ke','overview')">Overview</div><div class="tab" onclick="showTab('berlin-ke','timeline')">Timeline</div><div class="tab" onclick="showTab('berlin-ke','actions')">Actions</div></div>
+  <div class="content">
+    <div class="pane active" id="berlin-ke-pane-overview">
+      <div class="grid-3">
+        <div class="metric"><div class="metric-label">CapEx (reduced)</div><div class="metric-value" style="color:var(--green)">€4.45M</div><div class="metric-sub">Antony, Mar 13</div></div>
+        <div class="metric"><div class="metric-label">Contract</div><div class="metric-value" style="font-size:18px">22 weeks</div><div class="metric-sub" data-en="From works start" data-fr="À compter du démarrage">From works start</div></div>
+        <div class="metric"><div class="metric-label" data-en="Opening" data-fr="Ouverture">Opening</div><div class="metric-value" style="color:var(--orange);font-size:18px">2026</div><div class="metric-sub" data-en="At risk — LL dependency" data-fr="À risque — dépendance LL">At risk — LL dependency</div></div>
+      </div>
+      <div class="section-title">Signals</div>
+      <div class="card">
+        <div class="signal"><span class="sdot dot-orange"></span><div style="flex:1"><div class="signal-title" data-en="Opening 2026 at risk — landlord works dependency" data-fr="Ouverture 2026 à risque — dépendance travaux landlord">Opening 2026 at risk — landlord works dependency</div><div class="signal-meta" data-en="Source: Gavin, Feb 12. Timeline conditional on landlord completing parallel works." data-fr="Source : Gavin, 12 fév. Timeline conditionnelle aux travaux parallèles du landlord.">Source: Gavin, Feb 12. Timeline conditional on landlord completing parallel works.</div></div><span class="badge badge-orange">Watch</span></div>
+        <div class="signal"><span class="sdot dot-green"></span><div style="flex:1"><div class="signal-title" data-en="CapEx reduced to €4,451,886 — Antony, Mar 13" data-fr="CapEx réduit à €4,451,886 — Antony, 13 mars">CapEx reduced to €4,451,886 — Antony, Mar 13</div></div><span class="badge badge-green" data-en="Positive" data-fr="Positif">Positive</span></div>
+        <div class="signal"><span class="sdot dot-green"></span><div style="flex:1"><div class="signal-title" data-en="VE in good position — Antony, Apr 13" data-fr="VE en bonne position — Antony, 13 avr.">VE in good position — Antony, Apr 13</div></div><span class="badge badge-green" data-en="On track" data-fr="En bonne voie">On track</span></div>
+      </div>
+    </div>
+    <div class="pane" id="berlin-ke-pane-timeline">
+      <div class="section-title">Timeline</div>
+      <div class="card">
+        <div class="tl-row"><div class="tl-date">Ongoing</div><div class="tl-dot tl-dot-active"></div><div class="tl-body"><div class="tl-title" data-en="Construction — 22-week contract" data-fr="Construction — contrat 22 semaines">Construction — 22-week contract</div></div><span class="badge badge-orange" data-en="In progress" data-fr="En cours">In progress</span></div>
+        <div class="tl-row" style="border-bottom:none"><div class="tl-date">2026</div><div class="tl-dot" style="background:var(--gold);width:14px;height:14px;margin-top:3px;flex-shrink:0"></div><div class="tl-body"><div class="tl-title" style="font-family:'Playfair Display',serif" data-en="Opening target — at risk" data-fr="Ouverture cible — à risque">Opening target — at risk</div></div><span class="badge badge-orange" data-en="At risk" data-fr="À risque">At risk</span></div>
+      </div>
+    </div>
+    <div class="pane" id="berlin-ke-pane-actions">
+      <div class="act-toolbar"><div style="display:flex;align-items:center;gap:10px"><span class="section-title" style="margin:0;border:none;padding:0">Action tracker</span><span id="berlin-ke-edit-hint" style="font-size:11px;color:var(--text-muted);font-style:italic">— view mode</span></div><div style="display:flex;gap:8px"><button class="flt-btn active" onclick="filterAct('berlin-ke','all',this)">All</button><button class="add-act-btn" id="berlin-ke-add-btn" onclick="addAct('berlin-ke')">+ Add</button></div></div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="at"><thead><tr><th style="width:40%">Action</th><th>Owner</th><th>Deadline</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody id="berlin-ke-action-body"><tr><td style="font-weight:500">Confirm landlord works timeline</td><td style="font-size:12px;color:var(--text-muted)">Gavin</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-CRITICAL" style="font-size:12px">Critical</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">VE finalization with Antony</td><td style="font-size:12px;color:var(--text-muted)">Antony</td><td style="font-size:12px;color:var(--text-muted)">TBD</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- MEXICO -->
+<div class="project-view" id="view-mexico">
+  <div class="proj-hdr"><div class="proj-hdr-left"><h1>Mexico — La Bellezza</h1><p data-en="Pre-opening · Updated Apr 16, 2026" data-fr="Pré-ouverture · Mis à jour 16 avr. 2026">Pre-opening · Updated Apr 16, 2026</p></div><button class="edit-toggle-btn" id="mexicoEditBtn" onclick="toggleEdit('mexico')"><span id="mexicoEditIcon">✏</span> <span id="mexicoEditLabel">Edit actions</span></button></div>
+  <div class="alert-bar"><div class="al"><span class="dot dot-green"></span><strong data-en="Opening May–Jun 2026 — first Big Mamma franchise" data-fr="Ouverture mai–juin 2026 — première franchise Big Mamma">Opening May–Jun 2026 — first Big Mamma franchise</strong></div><div class="al"><span class="dot dot-orange"></span><span data-en="Cost allocation open — Maria Cuenca (Grupo Dinar)" data-fr="Allocation coûts ouverte — Maria Cuenca (Grupo Dinar)">Cost allocation open — Maria Cuenca</span></div></div>
+  <div class="tabs" id="mexico-tabs"><div class="tab active" onclick="showTab('mexico','overview')">Overview</div><div class="tab" onclick="showTab('mexico','timeline')">Timeline</div><div class="tab" onclick="showTab('mexico','actions')">Actions</div></div>
+  <div class="content">
+    <div class="pane active" id="mexico-pane-overview">
+      <div class="grid-3">
+        <div class="metric"><div class="metric-label" data-en="Opening" data-fr="Ouverture">Opening</div><div class="metric-value" style="color:var(--green);font-size:18px">Jun 2026</div><div class="metric-sub">Mai–juin 2026</div></div>
+        <div class="metric"><div class="metric-label">Franchise partner</div><div class="metric-value" style="font-size:15px">Grupo Dinar</div></div>
+        <div class="metric"><div class="metric-label">Training Madrid</div><div class="metric-value" style="font-size:15px;color:var(--green)">Done</div><div class="metric-sub">Week of Apr 7</div></div>
+      </div>
+      <div class="section-title">Signals</div>
+      <div class="card">
+        <div class="signal"><span class="sdot dot-green"></span><div style="flex:1"><div class="signal-title" data-en="Training Madrid completed — week of Apr 7" data-fr="Formation Madrid terminée — semaine du 7 avr.">Training Madrid completed — week of Apr 7</div><div class="signal-meta" data-en="Grupo Dinar team trained. Menu + recipe book delivered." data-fr="Équipe Grupo Dinar formée. Menu + recipe book livrés.">Grupo Dinar team trained. Menu + recipe book delivered.</div></div><span class="badge badge-green">Done</span></div>
+        <div class="signal"><span class="sdot dot-orange"></span><div style="flex:1"><div class="signal-title" data-en="Cost allocation open — Maria Cuenca (Grupo Dinar)" data-fr="Allocation coûts ouverte — Maria Cuenca (Grupo Dinar)">Cost allocation open — Maria Cuenca (Grupo Dinar)</div><div class="signal-meta" data-en="Source: Clem email Apr 7. Resolution needed before opening." data-fr="Source : email Clem 7 avr. Résolution nécessaire avant ouverture.">Source: Clem, Apr 7. Resolution needed before opening.</div></div><span class="badge badge-orange" data-en="Open" data-fr="Ouvert">Open</span></div>
+        <div class="signal"><span class="sdot dot-gold"></span><div style="flex:1"><div class="signal-title" data-en="Weekly PM meeting — Edicon + Grupo Dinar" data-fr="Réunion hebdo PM — Edicon + Grupo Dinar">Weekly PM meeting — Edicon + Grupo Dinar</div></div><span class="badge badge-gold" data-en="Ongoing" data-fr="En cours">Ongoing</span></div>
+      </div>
+    </div>
+    <div class="pane" id="mexico-pane-timeline">
+      <div class="section-title">Timeline</div>
+      <div class="card">
+        <div class="tl-row"><div class="tl-date">Wk Apr 7</div><div class="tl-dot tl-dot-done"></div><div class="tl-body"><div class="tl-title" data-en="Training Madrid — Grupo Dinar" data-fr="Formation Madrid — Grupo Dinar">Training Madrid — Grupo Dinar</div></div><span class="badge badge-green">Done</span></div>
+        <div class="tl-row" style="border-bottom:none"><div class="tl-date">May–Jun 2026</div><div class="tl-dot" style="background:var(--gold);width:14px;height:14px;margin-top:3px;flex-shrink:0"></div><div class="tl-body"><div class="tl-title" style="font-family:'Playfair Display',serif" data-en="Opening — La Bellezza Mexico" data-fr="Ouverture — La Bellezza Mexico">Opening — La Bellezza Mexico</div><div class="tl-desc" data-en="First Big Mamma franchise · Grupo Dinar" data-fr="Première franchise Big Mamma · Grupo Dinar">First Big Mamma franchise · Grupo Dinar</div></div><span class="badge badge-gold">Target</span></div>
+      </div>
+    </div>
+    <div class="pane" id="mexico-pane-actions">
+      <div class="act-toolbar"><div style="display:flex;align-items:center;gap:10px"><span class="section-title" style="margin:0;border:none;padding:0">Action tracker</span><span id="mexico-edit-hint" style="font-size:11px;color:var(--text-muted);font-style:italic">— view mode</span></div><div style="display:flex;gap:8px"><button class="flt-btn active" onclick="filterAct('mexico','all',this)">All</button><button class="add-act-btn" id="mexico-add-btn" onclick="addAct('mexico')">+ Add</button></div></div>
+      <div class="card" style="padding:0;overflow:hidden"><table class="at"><thead><tr><th style="width:40%">Action</th><th>Owner</th><th>Deadline</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody id="mexico-action-body"><tr><td style="font-weight:500">Resolve cost allocation — Maria Cuenca (Grupo Dinar)</td><td style="font-size:12px;color:var(--text-muted)">Clem</td><td style="font-size:12px;color:var(--text-muted)">Urgent</td><td class="p-HIGH" style="font-size:12px">High</td><td><span class="badge s-OPEN">Open</span></td><td></td></tr><tr><td style="font-weight:500">Opening preparation — Edicon weekly PM calls</td><td style="font-size:12px;color:var(--text-muted)">Clem</td><td style="font-size:12px;color:var(--text-muted)">Weekly</td><td class="p-NORMAL" style="font-size:12px">Normal</td><td><span class="badge s-IN_PROGRESS">In progress</span></td><td></td></tr></tbody></table></div>
     </div>
   </div>
 </div>
 
 <script>
-function show(i){
-  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',j===i));
-  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+// ═══════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════
+var ACTIONS = {
+  miami:[
+    {id:'m1',t:'Confirm outdoor cooking rules',tf:'Confirmer règles cuisine outdoor',o:'Gavin',d:'ASAP',df:'ASAP',p:'CRITICAL',s:'IN_PROGRESS'},
+    {id:'m2',t:'Zoning workshop — Lloyd + Justin + KIKI (layout + cover counts)',tf:'Workshop zoning — Lloyd + Justin + KIKI',o:'Lloyd/Justin',d:'Wk Apr 20',df:'Sem. 20 avr.',p:'CRITICAL',s:'IN_PROGRESS'},
+    {id:'m3',t:'KIKI confirms pool bar position',tf:'KIKI confirme position bar piscine',o:'BT/KIKI',d:'Before May 12',df:'Avant 12 mai',p:'CRITICAL',s:'OPEN'},
+    {id:'m4',t:'KIKI layouts → include in board presentation (confirm Justin)',tf:'Layouts KIKI → présentation board',o:'Justin/BT',d:'TBD',df:'À définir',p:'HIGH',s:'OPEN'},
+    {id:'m5',t:'Chef\'s table location — expo line vs central kitchen (KIKI workshop)',tf:'Emplacement table du chef — workshop KIKI',o:'BT/KIKI',d:'KIKI workshop',df:'Workshop KIKI',p:'HIGH',s:'OPEN'},
+    {id:'m6',t:'Maryon — legal review rent cliff graduated formula',tf:'Maryon — revue légale formule effet cliquet',o:'Maryon',d:'ASAP',df:'ASAP',p:'HIGH',s:'IN_PROGRESS'},
+    {id:'m7',t:'Juno GC tender results (Apr 17) → CapEx benchmark for Miami',tf:'Résultats tender GC Juno → benchmark Miami',o:'Gavin',d:'Apr 17',df:'17 avr.',p:'HIGH',s:'OPEN'},
+    {id:'m8',t:'Challenge $9.3M CapEx with Antony + Gavin',tf:'Challenger CapEx $9.3M avec Antony + Gavin',o:'BT/Antony',d:'TBD',df:'À définir',p:'HIGH',s:'OPEN'},
+    {id:'m9',t:'Pool area estimation — Clem review',tf:'Estimation zone piscine — review Clem',o:'Clem',d:'Wk Apr 20',df:'Sem. 20 avr.',p:'HIGH',s:'PENDING'},
+    {id:'m10',t:'Outdoor cooking scenario — Apolline input needed',tf:'Scénario cuisine outdoor — input Apolline',o:'Apolline',d:'Wk Apr 20',df:'Sem. 20 avr.',p:'NORMAL',s:'PENDING'},
+    {id:'m11',t:'Tigrane to call Ramon — sunbed policy alignment',tf:'Tigrane appelle Ramon — politique transats',o:'Tigrane',d:'ASAP',df:'ASAP',p:'NORMAL',s:'OPEN'},
+    {id:'m12',t:'Christine (via Tigrane) — ASPH data: Sunny, Claudie, Felice, Mandoline',tf:'Christine — données ASPH (Tigrane)',o:'Tigrane',d:'ASAP',df:'ASAP',p:'NORMAL',s:'OPEN'},
+    {id:'m13',t:'Finalize studio kick-off agenda (May 12)',tf:'Agenda studio kick-off (12 mai)',o:'Antoine',d:'May 5',df:'5 mai',p:'NORMAL',s:'OPEN'}
+  ],
+  charlotte:[
+    {id:'c1',t:'Lease call — BMG + Ballyhoo (11am CST)',tf:'Call bail BMG + Ballyhoo (11h CST)',o:'Tigrane/Maryon',d:'Apr 15',df:'15 avr.',p:'CRITICAL',s:'IN_PROGRESS'},
+    {id:'c2',t:'Tigrane + Ryan O\'Donnell — Chicago alignment',tf:'Tigrane + Ryan O\'Donnell — alignment Chicago',o:'Tigrane',d:'Wk Apr 20',df:'Sem. 20 avr.',p:'CRITICAL',s:'OPEN'},
+    {id:'c3',t:'Legal team response post-call',tf:'Réponse équipe juridique post-call',o:'Maryon',d:'TBD',df:'À définir',p:'HIGH',s:'PENDING'},
+    {id:'c4',t:'Lease signature',tf:'Signature bail',o:'Maryon/Carla',d:'TBD',df:'À définir',p:'HIGH',s:'PENDING'}
+  ],
+  juno:[
+    {id:'j1',t:'GC tender results — 4 contractors',tf:'Résultats tender GC — 4 entreprises',o:'Gavin',d:'Apr 17',df:'17 avr.',p:'CRITICAL',s:'OPEN'},
+    {id:'j2',t:'OPCO/PROPCO decision with Ballyhoo',tf:'Décision OPCO/PROPCO avec Ballyhoo',o:'BT',d:'TBD',df:'À définir',p:'HIGH',s:'OPEN'}
+  ],
+  'berlin-gm':[
+    {id:'bg1',t:'Resolve VE issues — Antony',tf:'Résoudre VE issues — Antony',o:'Antony',d:'TBD',df:'À définir',p:'HIGH',s:'IN_PROGRESS'},
+    {id:'bg2',t:'Confirm handover May 18',tf:'Confirmer handover 18 mai',o:'Gavin',d:'Apr 30',df:'30 avr.',p:'HIGH',s:'OPEN'}
+  ],
+  'berlin-ke':[
+    {id:'bk1',t:'Confirm landlord works timeline',tf:'Confirmer timeline travaux landlord',o:'Gavin',d:'TBD',df:'À définir',p:'CRITICAL',s:'OPEN'},
+    {id:'bk2',t:'VE finalization with Antony',tf:'Finalisation VE avec Antony',o:'Antony',d:'TBD',df:'À définir',p:'HIGH',s:'IN_PROGRESS'}
+  ],
+  mexico:[
+    {id:'mx1',t:'Resolve cost allocation — Maria Cuenca (Grupo Dinar)',tf:'Résoudre allocation coûts — Maria Cuenca',o:'Clem',d:'Urgent',df:'Urgent',p:'HIGH',s:'OPEN'},
+    {id:'mx2',t:'Opening preparation — Edicon weekly PM calls',tf:'Préparation ouverture — PM calls hebdo Edicon',o:'Clem',d:'Weekly',df:'Hebdo',p:'NORMAL',s:'IN_PROGRESS'}
+  ]
+};
+
+var STORED={};
+var EDIT={};
+var CURFILTER={};
+var lang='en';
+var nextId=1000;
+
+var SL={en:{OPEN:'Open',IN_PROGRESS:'In progress',DONE:'Done',BLOCKED:'Blocked',PENDING:'Pending'},fr:{OPEN:'Ouvert',IN_PROGRESS:'En cours',DONE:'Fait',BLOCKED:'Bloqué',PENDING:'En attente'}};
+var PL={en:{CRITICAL:'Critical',HIGH:'High',NORMAL:'Normal'},fr:{CRITICAL:'Critique',HIGH:'Haute',NORMAL:'Normale'}};
+
+function getActs(pid){
+  var base=ACTIONS[pid]?ACTIONS[pid].map(function(a){return Object.assign({},a);}):[];
+  var ov=STORED[pid]||{};
+  var res=base.map(function(a){return ov[a.id]?Object.assign({},a,ov[a.id]):a;}).filter(function(a){return !a.__del;});
+  var nx=(ov.__new__||[]).filter(function(a){return !a.__del;});
+  return res.concat(nx);
 }
 
-function downloadAndDeploy(){
-  var btn=document.getElementById('deploy-btn');
-  var log=document.getElementById('log');
-  btn.disabled=true;
-  btn.textContent='📥 Downloading…';
+function saveActs(pid){
+  var v=JSON.stringify(STORED);
+  try{if(window.storage)window.storage.set('bm-v4',v);}catch(e){}
+  try{localStorage.setItem('bm-v4',v);}catch(e){}
+}
+
+async function loadActs(){
   try{
-    var html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
-    var blob=new Blob([html],{type:'text/html'});
+    if(window.storage){var r=await window.storage.get('bm-v4');if(r&&r.value)STORED=JSON.parse(r.value);}
+    else{var v=localStorage.getItem('bm-v4');if(v)STORED=JSON.parse(v);}
+  }catch(e){}
+  ['miami','charlotte','juno','berlin-gm','berlin-ke','mexico'].forEach(function(p){renderActs(p);});
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderActs(pid){
+  var tbody=document.getElementById(pid+'-action-body');
+  if(!tbody)return;
+  var flt=CURFILTER[pid]||'all';
+  var acts=getActs(pid);
+  var shown=flt==='all'?acts:acts.filter(function(a){return a.s===flt;});
+  var em=EDIT[pid];
+  tbody.innerHTML=shown.map(function(a){
+    var sl=SL[lang][a.s]||a.s,pl=PL[lang][a.p]||a.p;
+    var title=lang==='fr'&&a.tf?a.tf:a.t,due=lang==='fr'&&a.df?a.df:a.d;
+    if(em){
+      return '<tr><td><input class="act-input" value="'+esc(a.t)+'" onchange="updateAct(\''+pid+'\',\''+a.id+'\',\'t\',this.value)" style="width:100%"></td>'+
+        '<td><input class="act-input" value="'+esc(a.o)+'" onchange="updateAct(\''+pid+'\',\''+a.id+'\',\'o\',this.value)" style="width:75px"></td>'+
+        '<td><input class="act-input" value="'+esc(a.d)+'" onchange="updateAct(\''+pid+'\',\''+a.id+'\',\'d\',this.value)" style="width:80px"></td>'+
+        '<td><select class="ssel p-'+a.p+'" onchange="updateAct(\''+pid+'\',\''+a.id+'\',\'p\',this.value)">'+
+          ['CRITICAL','HIGH','NORMAL'].map(function(p){return '<option value="'+p+'"'+(a.p===p?' selected':'')+'>'+PL[lang][p]+'</option>';}).join('')+
+        '</select></td>'+
+        '<td><select class="ssel s-'+a.s+'" onchange="updateAct(\''+pid+'\',\''+a.id+'\',\'s\',this.value)">'+
+          ['OPEN','IN_PROGRESS','DONE','PENDING','BLOCKED'].map(function(s){return '<option value="'+s+'"'+(a.s===s?' selected':'')+'>'+SL[lang][s]+'</option>';}).join('')+
+        '</select></td>'+
+        '<td><button class="del-btn" onclick="delAct(\''+pid+'\',\''+a.id+'\')">✕</button></td></tr>';
+    }else{
+      return '<tr><td style="font-weight:500">'+esc(title)+'</td><td style="font-size:12px;color:var(--text-muted)">'+esc(a.o)+'</td><td style="font-size:12px;color:var(--text-muted)">'+esc(due)+'</td>'+
+        '<td class="p-'+a.p+'" style="font-size:12px">'+pl+'</td>'+
+        '<td><span class="badge s-'+a.s+'">'+sl+'</span></td><td></td></tr>';
+    }
+  }).join('');
+}
+
+function updateAct(pid,id,field,val){
+  if(!STORED[pid])STORED[pid]={};
+  var base=ACTIONS[pid]?ACTIONS[pid].find(function(a){return a.id===id;}):null;
+  var nx=(STORED[pid].__new__||[]).find(function(a){return a.id===id;});
+  if(base){if(!STORED[pid][id])STORED[pid][id]={};STORED[pid][id][field]=val;}
+  else if(nx){nx[field]=val;}
+  saveActs(pid);renderActs(pid);
+}
+
+function delAct(pid,id){
+  if(!STORED[pid])STORED[pid]={};
+  var isBase=ACTIONS[pid]&&ACTIONS[pid].some(function(a){return a.id===id;});
+  if(isBase){if(!STORED[pid][id])STORED[pid][id]={};STORED[pid][id].__del=true;}
+  else{STORED[pid].__new__=(STORED[pid].__new__||[]).filter(function(a){return a.id!==id;});}
+  saveActs(pid);renderActs(pid);
+}
+
+function addAct(pid){
+  if(!STORED[pid])STORED[pid]={};
+  if(!STORED[pid].__new__)STORED[pid].__new__=[];
+  STORED[pid].__new__.push({id:'n'+(nextId++),t:'New action',tf:'Nouvelle action',o:'BT',d:'TBD',df:'À définir',p:'NORMAL',s:'OPEN'});
+  saveActs(pid);renderActs(pid);
+}
+
+function filterAct(pid,f,el){
+  CURFILTER[pid]=f;
+  if(el){var bar=el.closest('div');bar.querySelectorAll('.flt-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');}
+  renderActs(pid);
+}
+
+function toggleEdit(pid){
+  EDIT[pid]=!EDIT[pid];
+  var btn=document.getElementById(pid+'EditBtn');
+  var icon=document.getElementById(pid+'EditIcon');
+  var lbl=document.getElementById(pid+'EditLabel');
+  var hint=document.getElementById(pid+'-edit-hint');
+  var addBtn=document.getElementById(pid+'-add-btn');
+  if(EDIT[pid]){
+    if(btn)btn.classList.add('on');
+    if(icon)icon.textContent='✓';
+    if(lbl)lbl.textContent=lang==='fr'?'Terminer':'Done editing';
+    if(hint)hint.textContent=lang==='fr'?'— mode édition':'— edit mode';
+    if(addBtn)addBtn.style.display='block';
+  }else{
+    if(btn)btn.classList.remove('on');
+    if(icon)icon.textContent='✏';
+    if(lbl)lbl.textContent=lang==='fr'?'Modifier':'Edit actions';
+    if(hint)hint.textContent=lang==='fr'?'— mode lecture':'— view mode';
+    if(addBtn)addBtn.style.display='none';
+  }
+  renderActs(pid);
+}
+
+// ── NAV ──
+function showProject(id){
+  document.querySelectorAll('.project-view').forEach(function(v){v.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  var view=document.getElementById('view-'+id);
+  if(view)view.classList.add('active');
+  event.target.classList.add('active');
+}
+
+function showTab(pid,tab){
+  var container=document.getElementById('view-'+pid);
+  if(!container)return;
+  container.querySelectorAll('.pane').forEach(function(p){p.classList.remove('active');});
+  container.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  var pane=document.getElementById(pid+'-pane-'+tab);
+  if(pane)pane.classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── LANG ──
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('[data-en]').forEach(function(el){el.textContent=el.getAttribute('data-'+l);});
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.textContent===l.toUpperCase());});
+  ['miami','charlotte','juno','berlin-gm','berlin-ke','mexico'].forEach(function(p){renderActs(p);});
+}
+
+// ── DOWNLOAD — triggers Python watcher → GitHub ──
+function downloadDashboard(){
+  try{
+    var content='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+    var blob=new Blob([content],{type:'text/html'});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
-    a.href=url;
-    a.download='bm-dashboard.html';
-    document.body.appendChild(a);
-    a.click();
+    a.href=url;a.download='bm-dashboard.html';
+    document.body.appendChild(a);a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    btn.textContent='✓ Downloaded — watcher deploys';
-    log.textContent='Le watcher Python détecte le fichier et déploie automatiquement';
-    setTimeout(function(){
-      btn.textContent='📥 Download & Deploy';
-      btn.disabled=false;
-      log.textContent='';
-    },5000);
-  }catch(e){
-    log.textContent='Erreur : '+e.message;
-    btn.disabled=false;
-    btn.textContent='📥 Download & Deploy';
-  }
+    setTimeout(function(){URL.revokeObjectURL(url);},200);
+  }catch(e){alert('Download error: '+e.message);}
 }
+
+loadActs();
 </script>
 
 
